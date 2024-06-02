@@ -5,10 +5,9 @@ import webserver.WebServerResponse;
 import java.sql.SQLException;
 import java.util.Random;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import dao.GameDAO;
+import dao.PlayerDAO;
+import models.Player;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
 
@@ -46,11 +45,16 @@ public class GameController
         WebServerRequest request = context.getRequest();
         WebServerResponse response = context.getResponse();
 
-        String player = request.getParam("nickname");
+        String nom = request.getParam("nickname");
         try {
-            GameDAO gameDAO = new GameDAO();
-            int id = gameDAO.createPlayer(player);
-            response.send(200, String.format("{\"playerId\":\"%d\"}", id));
+            PlayerDAO playerDAO = new PlayerDAO();
+            Player player = playerDAO.createPlayer(nom);
+            if(player == null)
+            {
+                response.serverError("Nickname already exist");
+                return;
+            }
+            response.json(player);
         } catch (SQLException e) {
             e.printStackTrace();
             response.serverError("An error occured");
@@ -85,9 +89,13 @@ public class GameController
         try {
             int idPlayer = Integer.valueOf(request.getParam("playerId"));
             
-            // TODO: Vérifier que la partie existe et le joueur, que la partie n'est pas pleine.
             GameDAO gameDAO = new GameDAO();
-            gameDAO.playerJoin(code, idPlayer);
+            
+            if(!gameDAO.playerJoin(code, idPlayer))
+            {
+                response.serverError("La partie est introuvable ou la partie est pleine");
+                return;
+            }
 
             response.ok("ok");
             // TODO: Renvoie la liste des joueurs présents

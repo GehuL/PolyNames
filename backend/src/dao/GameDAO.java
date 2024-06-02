@@ -36,37 +36,23 @@ public class GameDAO
 
         int idPartie = resultSet.getInt(1);
 
+        PreparedStatement joueSelect = bdd.prepareStatement("SELECT COUNT(*) FROM joue INNER JOIN partie ON partie.code=?");
+        joueSelect.setString(1, code);
+        ResultSet nbrJoueur = joueSelect.executeQuery();
+        nbrJoueur.next();
+        
+        if(nbrJoueur.getInt(1) >= 2)
+        {
+            return false;
+        }
+
+        // TODO: Vérifier si le joueur est déjà dans une partie
+
         // ajoute le joueur dans la partie
         PreparedStatement request = bdd.prepareStatement("INSERT INTO joue (idPartie, idJoueur, role) VALUES (?, ?, 'guesser');");
         request.setInt(1, idPartie);
         request.setInt(2, idPlayer);
         request.execute();
         return true;
-    }
-
-    /**
-     * 
-     * @param nickname
-     * @return Id du joueur ou -1 si existe déjà
-     * @throws SQLException
-     */
-    public int createPlayer(String nickname) throws SQLException
-    {
-        PreparedStatement select = bdd.prepareStatement("SELECT COUNT(nom) FROM joueur WHERE nom=?;");
-        select.setString(1, nickname);
-        ResultSet result = select.executeQuery();
-        result.next();
-        if(result.getInt(1) > 0) // Il y a déjà un pseudo
-            return -1;
-
-        PreparedStatement request = bdd.prepareStatement("INSERT INTO joueur (nom) VALUES (?);");
-        request.setString(1, nickname);
-        request.execute();
-
-        request = bdd.prepareStatement("SELECT id FROM joueur WHERE nom=?;");
-        request.setString(1, nickname);
-        result = request.executeQuery();
-        result.next();
-        return result.getInt(1);
     }
 }
