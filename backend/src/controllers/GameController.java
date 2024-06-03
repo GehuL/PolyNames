@@ -81,6 +81,12 @@ public class GameController
         String player = request.getParam("nickname");
     }
 
+    /**
+     * Traite une requete qui contient l'id du joueur et le code de la partie en paramètre.
+     * Renvoie une erreur si le code est invalide, la partie est pleine ou le joueur n'existe pas.
+     * Renvoie la liste des joueurs en cas de succés.
+     * @param context
+     */
     public static void playerJoin(WebServerContext context)
     {
         WebServerRequest request = context.getRequest();
@@ -92,14 +98,9 @@ public class GameController
             
             GameDAO gameDAO = new GameDAO();
             
-            if(!gameDAO.playerJoin(code, idPlayer))
-            {
-                response.serverError("La partie est introuvable ou la partie est pleine");
-                return;
-            }
+            gameDAO.playerJoin(code, idPlayer);
+            response.json(gameDAO.getPlayers(code));
 
-            response.ok("ok");
-            // TODO: Renvoie la liste des joueurs présents
         } catch (SQLException e) {
             System.out.println(e);
             response.serverError("An error occured");

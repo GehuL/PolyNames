@@ -3,8 +3,11 @@ package dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import database.PolynamesDatabase;
+import models.Game;
+import models.Player;
 
 public class GameDAO 
 {
@@ -21,6 +24,30 @@ public class GameDAO
         request.setString(1, code);
         request.execute();
         return true;
+    }
+    
+    public Game getGame(String code)
+    {
+        // TODO: faire la fonction
+        return null;
+    }
+
+    /**
+     * 
+     * @param code Le code d'une partie
+     * @return La liste des joueurs dans la partie, peut être vide
+     * @throws SQLException 
+     */
+    public ArrayList<Player> getPlayers(String code) throws SQLException
+    {
+        // récupère les joueurs dans la partie correspondante
+        PreparedStatement request = bdd.prepareStatement("SELECT idJoueur, nom FROM joue INNER JOIN partie ON joue.idPartie=partie.id INNER JOIN joueur ON idJoueur=joueur.id WHERE code=?;");
+        request.setString(1, code);
+        ResultSet result = request.executeQuery();
+        ArrayList<Player> players = new ArrayList<>();
+        while(result.next())
+            players.add(new Player(result.getInt(1), result.getString(2)));
+        return players;
     }
 
     public boolean playerJoin(String code, int idPlayer) throws SQLException, JoinException
