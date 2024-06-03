@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.Random;
 
 import dao.GameDAO;
+import dao.GameDAO.JoinException;
 import dao.PlayerDAO;
 import models.Player;
 import webserver.WebServerContext;
@@ -102,6 +103,8 @@ public class GameController
         } catch (SQLException e) {
             System.out.println(e);
             response.serverError("An error occured");
+        } catch (JoinException e) {
+            response.serverError(e.getMessage());
         }
     }
     
