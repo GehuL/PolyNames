@@ -56,6 +56,7 @@ body > div {
 
 .menu > button:active
 {
+    transition: transform 0.1s;
     transform: scale(0.9);
 }
 
