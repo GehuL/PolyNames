@@ -1,7 +1,7 @@
 CREATE TABLE `polynames`.`partie` (`id` INT NOT NULL AUTO_INCREMENT , `code` CHAR(5) NOT NULL , `score` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
 CREATE TABLE `polynames`.`joue` (`idPartie` INT NOT NULL , `idJoueur` INT NOT NULL , `role` ENUM('guesser','spy') NOT NULL ) ENGINE = InnoDB;
 CREATE TABLE `polynames`.`joueur` (`id` INT NOT NULL AUTO_INCREMENT , `nom` VARCHAR(10) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB; 
-CREATE TABLE `polynames`.`mot` (`id` INT NOT NULL AUTO_INCREMENT , `idPartie` INT NOT NULL , `idMot` INT NOT NULL , `couleur` ENUM('bleu','gris','noir') NOT NULL , `revelee` BOOLEAN NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB; 
+CREATE TABLE `polynames`.`carte` (`id` INT NOT NULL AUTO_INCREMENT , `idPartie` INT NOT NULL , `idMot` INT NOT NULL , `couleur` ENUM('bleu','gris','noir') NOT NULL , `revelee` BOOLEAN NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB; 
 CREATE TABLE `polynames`.`dictionnaire` (`id` INT NOT NULL AUTO_INCREMENT , `mot` VARCHAR(15) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
 
 ALTER TABLE `polynames`.`joue`
@@ -11,8 +11,8 @@ REFERENCES `partie`(`id`)
 ON UPDATE NO ACTION
 ON DELETE CASCADE;
 
-ALTER TABLE `polynames`.`mot`
-ADD CONSTRAINT `FK_idPartie_mot`
+ALTER TABLE `polynames`.`carte`
+ADD CONSTRAINT `FK_idPartie_carte`
 FOREIGN KEY (`idPartie`)
 REFERENCES `partie`(`id`)
 ON UPDATE NO ACTION

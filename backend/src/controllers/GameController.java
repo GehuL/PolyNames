@@ -15,7 +15,7 @@ import webserver.WebServerRequest;
 public class GameController
 {
     /**
-     * Créer une partie. Renvoie un code de partie au client ou une erreur.
+     * Créer une partie. Renvoi un code de partie au client ou une erreur.
      * @param context
      */
     public static void createGame(WebServerContext context)
@@ -38,7 +38,7 @@ public class GameController
     }
 
     /**
-     * Créer un nouveau joueur à partir du pseudo envoyé et renvoie au client l'id du joueur.
+     * Créer un nouveau joueur à partir du pseudo envoyé et renvoi au client l'id du joueur.
      * @param context
      */
     public static void createPlayer(WebServerContext context)

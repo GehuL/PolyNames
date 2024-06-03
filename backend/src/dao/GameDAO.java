@@ -32,6 +32,14 @@ public class GameDAO
         return null;
     }
 
+    public void setRole(int idPlayer, String role) throws SQLException
+    {
+        PreparedStatement request = bdd.prepareStatement("UPDATE joue SET role=? WHERE idJoueur=?;");
+        request.setString(1, role);
+        request.setInt(2, idPlayer);
+        request.executeUpdate();
+    }
+
     /**
      * 
      * @param code Le code d'une partie
