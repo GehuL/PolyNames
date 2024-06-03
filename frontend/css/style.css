@@ -48,6 +48,17 @@ body > div {
     height: 70px;
 }
 
+.menu > button:hover
+{
+  background-color: rgb(255, 208, 79);
+  color: rgb(61, 40, 12);
+}
+
+.menu > button:active
+{
+    transform: scale(0.9);
+}
+
 .menu > input
 {
     margin-top: 10px;
