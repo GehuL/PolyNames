@@ -37,31 +37,6 @@ public class GameController
         response.serverError("An error occured");
     }
 
-    /**
-     * Créer un nouveau joueur à partir du pseudo envoyé et renvoi au client l'id du joueur.
-     * @param context
-     */
-    public static void createPlayer(WebServerContext context)
-    {
-        WebServerRequest request = context.getRequest();
-        WebServerResponse response = context.getResponse();
-
-        String nom = request.getParam("nickname");
-        try {
-            PlayerDAO playerDAO = new PlayerDAO();
-            Player player = playerDAO.createPlayer(nom);
-            if(player == null)
-            {
-                response.serverError("Nickname already exist");
-                return;
-            }
-            response.json(player);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            response.serverError("An error occured");
-        }
-    }
-
     public static void setRole(WebServerContext context)
     {
         WebServerRequest request = context.getRequest();
@@ -92,14 +67,14 @@ public class GameController
         WebServerRequest request = context.getRequest();
         WebServerResponse response = context.getResponse();
 
-        String code = request.getParam("code");
         try {
-            int idPlayer = Integer.valueOf(request.getParam("playerId"));
+            String code = request.getParam("code");
+            String nickname = request.getParam("nickname");
             
             GameDAO gameDAO = new GameDAO();
             
-            gameDAO.playerJoin(code, idPlayer);
-            response.json(gameDAO.getPlayers(code));
+            gameDAO.playerJoin(code, nickname);
+            response.json(new PlayerDAO().getPlayers(code));
 
         } catch (SQLException e) {
             System.out.println(e);

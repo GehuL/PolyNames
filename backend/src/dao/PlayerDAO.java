@@ -18,22 +18,20 @@ public class PlayerDAO
     }
 
     /**
-     * Cherche un joueur dans la BDD
-     * @param nom
-     * @return Renvoie les joueurs avec pseudo correspondant
+     * 
+     * @param code Le code d'une partie
+     * @return La liste des joueurs dans la partie, peut être vide
      * @throws SQLException 
-     */    
-    public ArrayList<Player> getPlayers(String nom) throws SQLException
+     */
+    public ArrayList<Player> getPlayers(String code) throws SQLException
     {
-        // Cherche le pseudo dans la BDD
-        PreparedStatement select = bdd.prepareStatement("SELECT id, nom FROM joueur WHERE nom=?;");
-        select.setString(1, nom);
-        ResultSet result = select.executeQuery();
+        // récupère les joueurs dans la partie correspondante
+        PreparedStatement request = bdd.prepareStatement("SELECT joueur.id, joueur.idPartie, role, nom FROM joueur INNER JOIN partie ON joueur.idPartie=partie.id WHERE partie.code=?;");
+        request.setString(1, code);
+        ResultSet result = request.executeQuery();
         ArrayList<Player> players = new ArrayList<>();
-        
         while(result.next())
-        players.add(new Player(result.getInt(1), result.getString(2)));
-
+            players.add(new Player(result.getInt(1), result.getInt(2) , result.getString(3), result.getString(4)));
         return players;
     }
 
@@ -46,14 +44,14 @@ public class PlayerDAO
     public Player getPlayer(int id) throws SQLException
     {
         // Cherche le pseudo dans la BDD
-        PreparedStatement select = bdd.prepareStatement("SELECT id,nom FROM joueur WHERE id=?;");
+        PreparedStatement select = bdd.prepareStatement("SELECT joueur.id, joueur.idPartie, role, nom  FROM joueur WHERE id=?;");
         select.setInt(1, id);
         ResultSet result = select.executeQuery();
         
         if(!result.next())
             return null; 
 
-        return new Player(result.getInt(1), result.getString(2));
+        return new Player(result.getInt(1), result.getInt(2) , result.getString(3), result.getString(4));
     }
 
     /**
