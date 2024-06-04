@@ -1,15 +1,7 @@
 CREATE TABLE `polynames`.`partie` (`id` INT NOT NULL AUTO_INCREMENT , `code` CHAR(5) NOT NULL , `score` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
-CREATE TABLE `polynames`.`joue` (`idPartie` INT NOT NULL , `idJoueur` INT NOT NULL , `role` ENUM('guesser','spy') NOT NULL ) ENGINE = InnoDB;
-CREATE TABLE `polynames`.`joueur` (`id` INT NOT NULL AUTO_INCREMENT , `nom` VARCHAR(10) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB; 
+CREATE TABLE `polynames`.`joueur` (`id` INT NOT NULL AUTO_INCREMENT , `nom` VARCHAR(10) NOT NULL , `idPartie` INT NOT NULL, `role` ENUM('maitre_mot', 'maitre_intuition'), PRIMARY KEY (`id`)) ENGINE = InnoDB; 
 CREATE TABLE `polynames`.`carte` (`id` INT NOT NULL AUTO_INCREMENT , `idPartie` INT NOT NULL , `idMot` INT NOT NULL , `couleur` ENUM('bleu','gris','noir') NOT NULL , `revelee` BOOLEAN NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB; 
 CREATE TABLE `polynames`.`dictionnaire` (`id` INT NOT NULL AUTO_INCREMENT , `mot` VARCHAR(15) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
-
-ALTER TABLE `polynames`.`joue`
-ADD CONSTRAINT `FK_idPartie`
-FOREIGN KEY (`idPartie`)
-REFERENCES `partie`(`id`)
-ON UPDATE NO ACTION
-ON DELETE CASCADE;
 
 ALTER TABLE `polynames`.`carte`
 ADD CONSTRAINT `FK_idPartie_carte`
@@ -18,8 +10,13 @@ REFERENCES `partie`(`id`)
 ON UPDATE NO ACTION
 ON DELETE CASCADE;
 
-INSERT INTO joueur (nom) VALUES ('bernard'), ('Jack'), ('Splinter');
-INSERT INTO partie (score, code) VALUES (0, 'ABCDE');
-INSERT INTO joue (idPartie, idJoueur, role) VALUES (1, 1, 'spy'), (1, 2, 'guesser');
+ALTER TABLE `polynames`.`joueur`
+ADD CONSTRAINT `FK_idPartie_joueur`
+FOREIGN KEY (`idPartie`)
+REFERENCES `partie`(`id`)
+ON UPDATE NO ACTION
+ON DELETE CASCADE;
 
+INSERT INTO partie (score, code) VALUES (0, 'ABCDE');
+INSERT INTO joueur (nom, idPartie, role) VALUES ('bernard', 1, 'maitre_intuition'), ('Jack', 1, 'maitre_mot');
 INSERT INTO dictionnaire (mot) VALUES ('COURGETTE'),('TRACTEUR'),('PASTIS'),('CLAVIER'),('TOUCHE'),('ECOLE'),('BATIMENT'),('CHAT'),('INSPECTEUR'),('POULE'),('GALAXIE'),('POLITICIEN'),('CANIF'),('GRUE'),('ROUTE'),('VEHICULE'),('VELO'),('TELEPHONE'),('PYRAMIDE'),('NUAGE'),('VINAIGRE'),('POIVRE'),('MINISTRE'),('POESIE'),('ELECTRICITE'),('HUILE'),('GENOUX'),('POUMON'),('TECHNOCRATE'),('BUREAUCRATE'),('RHINOPLASTIE'),('ENCOCHE'),('PYTHAGORE'),('JOULE'),('PIANO'),('HARMONICA'),('CARAMBOLAGE'),('TRANSISTOR'),('BOUCLIER'),('VENDREDI'),('HYPOTHESE'),('IDEE'),('FOUGERE'),('ORTIE'),('CHAMPIGNON'),('SYLVICULTURE'),('REPUBLIQUE'),('CAMARADE'),('MOUTARDE'),('PARLEMENT');
