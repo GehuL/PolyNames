@@ -3,11 +3,9 @@ package dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 import database.PolynamesDatabase;
 import models.Game;
-import models.Player;
 
 public class GameDAO 
 {
