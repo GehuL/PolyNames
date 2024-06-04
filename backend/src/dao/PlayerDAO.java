@@ -18,7 +18,7 @@ public class PlayerDAO
     }
 
     /**
-     * 
+     * Renvoie les joueurs présents dans une partie.
      * @param code Le code d'une partie
      * @return La liste des joueurs dans la partie, peut être vide
      * @throws SQLException 
@@ -36,7 +36,7 @@ public class PlayerDAO
     }
 
     /**
-     * Cherche un joueur dans la BDD
+     * Cherche un joueur dans la BDD avec l'id en paramètre.
      * @param nom
      * @return Renvoie null si le joueur n'existe pas
      * @throws SQLException 
@@ -54,12 +54,13 @@ public class PlayerDAO
         return new Player(result.getInt(1), result.getInt(2) , result.getString(3), result.getString(4));
     }
 
-    /**
+    /** 
      * Cherche un joueur dans la BDD
      * @param nom
      * @return Renvoie true si le joueur existe
      * @throws SQLException 
-     */  
+     */ 
+    @Deprecated 
     public boolean exist(String nom) throws SQLException
     {
         PreparedStatement select = bdd.prepareStatement("SELECT COUNT(nom) FROM joueur WHERE nom=?;");
@@ -70,23 +71,16 @@ public class PlayerDAO
     }
     
     /**
-     * 
+     *  Créer un joueur temporaire. (Supprimé quand la partie est supprimé)
      * @param nickname
-     * @return Player ou null si existe déjà
      * @throws SQLException
      */
-    public Player createPlayer(String nickname) throws SQLException
+    public void createPlayer(String nickname, int partieId, String role) throws SQLException
     {
-        // Cherche le pseudo dans la BDD
-        if(exist(nickname))
-            return null;
-
-        // Ajoute le pseudo dans la BDD
-        PreparedStatement request = bdd.prepareStatement("INSERT INTO joueur (nom) VALUES (?);");
-        request.setString(1, nickname);
+        PreparedStatement request = bdd.prepareStatement("INSERT INTO joueur (idPartie, nom, role) VALUES (?, ?, 'maitre_intuition');");
+        request.setInt(1, partieId);
+        request.setString(2, nickname);
+        request.setString(3, role);
         request.execute();
-
-        // Renvoie le joueur
-        return getPlayers(nickname).get(0);
     }
 }
