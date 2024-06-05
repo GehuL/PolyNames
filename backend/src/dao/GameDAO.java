@@ -30,14 +30,6 @@ public class GameDAO
         return null;
     }
 
-    public void setRole(int idPlayer, String role) throws SQLException
-    {
-        PreparedStatement request = bdd.prepareStatement("UPDATE joueur SET role=? WHERE idJoueur=?;");
-        request.setString(1, role);
-        request.setInt(2, idPlayer);
-        request.executeUpdate();
-    }
-
     public boolean playerJoin(String code, String nickname) throws SQLException, JoinException
     {
         // Compte l'occurance de la partie dans la table JOUE et récupère l'ID de la partie si elle existe

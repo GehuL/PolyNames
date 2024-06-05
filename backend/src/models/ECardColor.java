@@ -1,8 +1,8 @@
 package models;
 
-public enum CardColor
+public enum ECardColor
 {
     GRAY,
-    bLUE,
+    BLUE,
     BLACK
 }

@@ -1,6 +1,6 @@
-CREATE TABLE `polynames`.`partie` (`id` INT NOT NULL AUTO_INCREMENT , `code` CHAR(5) NOT NULL , `score` INT NOT NULL , `role_courant` ENUM('maitre_mot', 'maitre_intuition'), `indice` VARCHAR(15), `nombre` INT NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;
-CREATE TABLE `polynames`.`joueur` (`id` INT NOT NULL AUTO_INCREMENT , `nom` VARCHAR(10) NOT NULL , `idPartie` INT NOT NULL, `role` ENUM('maitre_mot', 'maitre_intuition'), PRIMARY KEY (`id`)) ENGINE = InnoDB; 
-CREATE TABLE `polynames`.`carte` (`id` INT NOT NULL AUTO_INCREMENT , `idPartie` INT NOT NULL , `idMot` INT NOT NULL , `couleur` ENUM('bleu','gris','noir') NOT NULL , `revelee` BOOLEAN NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB; 
+CREATE TABLE `polynames`.`partie` (`id` INT NOT NULL AUTO_INCREMENT , `code` CHAR(5) NOT NULL , `score` INT NOT NULL , `role_courant` ENUM('maitre_mot', 'maitre_intuition') NOT NULL DEFAULT 'maitre_mot', `indice` VARCHAR(15) DEFAULT NULL, `nombre` INT DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;
+CREATE TABLE `polynames`.`joueur` (`id` INT NOT NULL AUTO_INCREMENT , `nom` VARCHAR(10) NOT NULL , `idPartie` INT NOT NULL, `role` ENUM('maitre_mot', 'maitre_intuition') NOT NULL DEFAULT 'maitre_intuition', PRIMARY KEY (`id`)) ENGINE = InnoDB; 
+CREATE TABLE `polynames`.`carte` (`id` INT NOT NULL AUTO_INCREMENT , `idPartie` INT NOT NULL , `idMot` INT NOT NULL , `couleur` ENUM('bleu','gris','noir') NOT NULL , `revelee` BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY (`id`)) ENGINE = InnoDB; 
 CREATE TABLE `polynames`.`dictionnaire` (`id` INT NOT NULL AUTO_INCREMENT , `mot` VARCHAR(15) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
 
 ALTER TABLE `polynames`.`carte`

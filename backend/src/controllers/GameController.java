@@ -36,23 +36,50 @@ public class GameController
         response.serverError("An error occured");
     }
 
+    /**
+     * Affecte le role à un joueur
+     * Renvoie une erreur si le role n'existe pas ou le joueur.
+     * @param context
+     */
     public static void setRole(WebServerContext context)
     {
         WebServerRequest request = context.getRequest();
         WebServerResponse response = context.getResponse();
-      
-        String code = request.getParam("code");
-        String player = request.getParam("idPlayer");
+
+        int playerId = Integer.valueOf(request.getParam("idPlayer"));
+        String role = request.getParam("role");
+        try {
+            PlayerDAO playerDAO = new PlayerDAO();
+            if(playerDAO.setRole(playerId, role))
+                response.ok("Role affecté");
+            else
+                response.serverError("Le joueur ou le role n'existe pas");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.serverError(e.getMessage());
+        }
     }
 
+    /**
+     * Débute la partie en générant 25 mots aléatoires
+     * @param context
+     */
     public static void startGame(WebServerContext context)
     {
         WebServerRequest request = context.getRequest();
         WebServerResponse response = context.getResponse();
         // TODO: Vérifier qu'il y a deux joueurs, avec deux roles différents et que la partie existe.
         // TODO: Si partie OK, générer les cartes
-        String code = request.getParam("code");
-        String player = request.getParam("nickname");
+        try {
+            GameDAO gameDAO = new GameDAO();
+            int idPartie = Integer.valueOf(request.getParam("idPartie"));
+            gameDAO.generateCards(idPartie);
+
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     /**

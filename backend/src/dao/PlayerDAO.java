@@ -26,13 +26,28 @@ public class PlayerDAO
     public ArrayList<Player> getPlayers(String code) throws SQLException
     {
         // récupère les joueurs dans la partie correspondante
-        PreparedStatement request = bdd.prepareStatement("SELECT joueur.id, joueur.idPartie, role, nom FROM joueur INNER JOIN partie ON joueur.idPartie=partie.id WHERE partie.code=?;");
+        PreparedStatement request = bdd.prepareStatement("SELECT joueur.id, joueur.idPartie, nom, role FROM joueur INNER JOIN partie ON joueur.idPartie=partie.id WHERE partie.code=?;");
         request.setString(1, code);
         ResultSet result = request.executeQuery();
         ArrayList<Player> players = new ArrayList<>();
         while(result.next())
             players.add(new Player(result.getInt(1), result.getInt(2) , result.getString(3), result.getString(4)));
         return players;
+    }
+
+    /**
+     * Définie le role du joeur ('maitre_mot' ou 'maitre_intuition')
+     * @param idPlayer L'id du joueur
+     * @param role Le role 
+     * @return Renvoie true si le joueur à été modifié, sinon false (si le joueur n'existe pas)
+     * @throws SQLException
+     */
+    public boolean setRole(int idPlayer, String role) throws SQLException
+    {
+        PreparedStatement request = bdd.prepareStatement("UPDATE joueur SET role=? WHERE id=?;");
+        request.setString(1, role);
+        request.setInt(2, idPlayer);
+        return request.executeUpdate() > 0;
     }
 
     /**

@@ -1,5 +1,3 @@
 package models;
 
-import java.util.ArrayList;
-
-public record Game(int id, String code, int core, ArrayList<Player> players, ArrayList<Card> cards) {}
+public record Game(int id, String code, int score, String role_actuelle, String indice, int nombre) {}
