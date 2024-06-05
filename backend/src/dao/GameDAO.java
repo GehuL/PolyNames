@@ -30,6 +30,18 @@ public class GameDAO
         return null;
     }
 
+    /**
+     * @return Le nombre de partie en cours dans la BDD
+     * @throws SQLException
+     */
+    public int getGameCount() throws SQLException
+    {
+        PreparedStatement statement = bdd.prepareStatement("SELECT COUNT(*) FROM partie;");
+        ResultSet result = statement.executeQuery();
+        result.next();
+        return result.getInt(1);
+    }
+
     public boolean playerJoin(String code, String nickname) throws SQLException, JoinException
     {
         // Compte l'occurance de la partie dans la table JOUE et récupère l'ID de la partie si elle existe

@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import database.PolynamesDatabase;
+import models.Card;
 import models.ECardColor;
 
 public class CardDAO 
@@ -24,7 +25,7 @@ public class CardDAO
         for(int i = 0; i < 8; i++)
         {
             Card card = new Card(result.getInt(1), result.getString(2), false, ECardColor.BLUE);
-            PreparedStatement insertCard = bdd.prepareStatement("INSERT INTO carte (idMot, idPartie, couleur)")
+           // PreparedStatement insertCard = bdd.prepareStatement("INSERT INTO carte (idMot, idPartie, couleur)")
         }
         
         while(result.next())

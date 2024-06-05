@@ -22,10 +22,11 @@ public class GameController
         WebServerResponse response = context.getResponse();
         try 
         {
-            GameDAO gameDAO = new GameDAO();
-            String code = generateCode();
-            if(gameDAO.createGame(code))
+            String code = createUniqueCode();
+            if(code != null)
             {
+                GameDAO gameDAO = new GameDAO();
+                gameDAO.createGame(code);
                 response.send(200, String.format("{\"code\":\"%s\"}", code));
                 return;
             }
@@ -34,6 +35,31 @@ public class GameController
             System.out.println(e);
         }
         response.serverError("An error occured");
+    }
+
+    /**
+     * Cherche un code unique parmis toutes les parties actuelles
+     * @return Le code ou null si aucun code ne peut être utiliser
+     */
+    private static String createUniqueCode()
+    {
+        String code = null;
+        try {
+            GameDAO gameDAO = new GameDAO();
+            
+            if(gameDAO.getGameCount() >= Math.pow(36, 5))
+                return null;
+            
+            // Génère un code temps qu'un code n'est pas disponible
+            do
+            {
+                code = generateCode();
+            }while(gameDAO.getGame(code) != null);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return code;
     }
 
     /**
@@ -74,7 +100,7 @@ public class GameController
         try {
             GameDAO gameDAO = new GameDAO();
             int idPartie = Integer.valueOf(request.getParam("idPartie"));
-            gameDAO.generateCards(idPartie);
+           // gameDAO.generateCards(idPartie);
 
         } catch (SQLException e) {
             // TODO Auto-generated catch block
@@ -112,6 +138,7 @@ public class GameController
     
     /**
      * Génère un code composé de 5 caractères de lettres et de chiffres.
+     * Le nombre de code total est de 36 puissance 5.
      * @return
      */
     public static String generateCode()

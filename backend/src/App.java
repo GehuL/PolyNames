@@ -6,7 +6,7 @@ public class App {
     {
         WebServer webServer = new WebServer();
         
-        webServer.getRouter().get("/createGame", GameController::createGame);
+        webServer.getRouter().put("/createGame", GameController::createGame);
         webServer.getRouter().post("/joinGame/:nickname/:code", GameController::playerJoin);
         webServer.getRouter().put("/role/:idPlayer/:role", GameController::setRole);
         webServer.getRouter().post("/start/:idPartie", GameController::startGame);
