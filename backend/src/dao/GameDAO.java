@@ -94,22 +94,22 @@ public class GameDAO
      * Ajoute le joueur dans la partie
      * @param idPartie L'id de la partie
      * @param nickname Le pseudo du joueur le temps de la partie (temporaire)
-     * @return Si le joueur est dans la partie
+     * @return l'id de la partie ou 0 si erreur
      * @throws SQLException
      * @throws JoinException
      */
 
-    public boolean playerJoin(int idPartie, String nickname) throws SQLException, JoinException
+    public int playerJoin(String code, String nickname) throws SQLException, JoinException
     {
         // Compte l'occurance de la partie dans la table JOUE et récupère l'ID de la partie si elle existe
-        PreparedStatement select = bdd.prepareStatement("SELECT COUNT(joueur.idPartie),partie.id FROM joueur RIGHT JOIN partie ON partie.id=joueur.idPartie WHERE partie.id=?;");
-        select.setInt(1, idPartie);
+        PreparedStatement select = bdd.prepareStatement("SELECT COUNT(joueur.idPartie),partie.id FROM joueur RIGHT JOIN partie ON partie.id=joueur.idPartie WHERE partie.code=?;");
+        select.setString(1, code);
         ResultSet resultSet = select.executeQuery();
         resultSet.next();
 
         // Vérifie si la partie existe, et qu'il reste de la place.
         int occurencePartie = resultSet.getInt(1);
-        idPartie = resultSet.getInt(2);
+        int idPartie = resultSet.getInt(2);
 
         if(idPartie == 0)
             throw new JoinException("Code de partie invalide", JoinException.Type.CODE_INVALID);
@@ -122,7 +122,14 @@ public class GameDAO
         request.setInt(1, idPartie);
         request.setString(2, nickname);
         request.execute();
-        return true;
+        return idPartie;
+    }
+
+    public boolean startGame(int idPartie) throws SQLException
+    {
+        PreparedStatement statement = bdd.prepareStatement("UPDATE partie SET etat='CHOISIR_INDICE' WHERE id=?;");
+        statement.setInt(1, idPartie);
+        return statement.executeUpdate() > 0;
     }
 
     public class JoinException extends Exception

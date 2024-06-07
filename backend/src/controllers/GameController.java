@@ -90,6 +90,7 @@ public class GameController
             response.serverError(e.getMessage());
         }
     }
+
     /**
      * Échange le role entre entre deux joueurs ou d'un seul.
      * @param idPartie L'id de la partie
@@ -143,11 +144,31 @@ public class GameController
     {
         WebServerRequest request = context.getRequest();
         WebServerResponse response = context.getResponse();
+
         // TODO: Vérifier qu'il y a deux joueurs, avec deux roles différents et que la partie existe.
         // TODO: Si partie OK, générer les cartes
         try {
             GameDAO gameDAO = new GameDAO();
             int idPartie = Integer.valueOf(request.getParam("idPartie"));
+
+            Game game = gameDAO.getGame(idPartie);
+            ArrayList<Player> players = new PlayerDAO().getPlayers(idPartie);
+
+            if(game == null)
+            {
+                response.serverError("Partie introuvable");
+            } else if(!game.etat().equals(EEtatPartie.SELECTION_ROLE))
+            {
+                response.serverError("Partie déjà débuté");
+                // TODO: SSE EVENT
+            }else if(players.size() < 2)
+            {
+                response.serverError("La partie est en attente de joueur");
+            }else
+            {
+                gameDAO.startGame(idPartie);
+                response.json(gameDAO.getGame(idPartie));
+            }
            // gameDAO.generateCards(idPartie);
 
         } catch (SQLException e) {
@@ -168,15 +189,15 @@ public class GameController
         WebServerResponse response = context.getResponse();
 
         try {
-            int idPartie = Integer.parseInt(request.getParam("idPartie"));
+            String code = request.getParam("code");
            
             Player player = request.extractBody(Player.class);
             System.out.println(player.nom());
             
             GameDAO gameDAO = new GameDAO();
             
-            gameDAO.playerJoin(idPartie, player.nom());
-            response.json(new PlayerDAO().getPlayers(idPartie));
+            int id = gameDAO.playerJoin(code, player.nom());
+            response.json(new PlayerDAO().getPlayers(id));
 
         } catch (SQLException e) {
             System.out.println(e);
