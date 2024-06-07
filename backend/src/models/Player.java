@@ -1,3 +1,3 @@
 package models;
 
-public record Player(int idJoueur, int idPartie, String nom, String role) {}
+public record Player(int id, String nom, int idPartie, String role) {}

@@ -24,10 +24,34 @@ public class GameDAO
         return true;
     }
     
-    public Game getGame(String code)
+    public Game getGame(String code) throws SQLException
     {
-        // TODO: faire la fonction
-        return null;
+        PreparedStatement request = bdd.prepareStatement("SELECT * FROM partie WHERE code=?;");
+        request.setString(1, code);
+        ResultSet result = request.executeQuery();
+        result.next();
+        result.findColumn("id");
+        return new Game(result.getInt("id"), 
+                        result.getString("code"), 
+                        result.getInt("score"), 
+                        result.getString("tour"), 
+                        result.getString("indiceCourant"), 
+                        result.getInt("doitDeviner"));
+    }
+
+    public Game getGame(int id) throws SQLException
+    {
+        PreparedStatement request = bdd.prepareStatement("SELECT * FROM partie WHERE id=?;");
+        request.setInt(1, id);
+        ResultSet result = request.executeQuery();
+        result.next();
+        result.findColumn("id");
+        return new Game(result.getInt("id"), 
+                        result.getString("code"), 
+                        result.getInt("score"), 
+                        result.getString("tour"), 
+                        result.getString("indiceCourant"), 
+                        result.getInt("doitDeviner"));
     }
 
     /**
@@ -42,17 +66,17 @@ public class GameDAO
         return result.getInt(1);
     }
 
-    public boolean playerJoin(String code, String nickname) throws SQLException, JoinException
+    public boolean playerJoin(int idPartie, String nickname) throws SQLException, JoinException
     {
         // Compte l'occurance de la partie dans la table JOUE et récupère l'ID de la partie si elle existe
-        PreparedStatement select = bdd.prepareStatement("SELECT COUNT(joueur.idPartie),partie.id FROM joueur RIGHT JOIN partie ON partie.id=joueur.idPartie WHERE partie.code=?;");
-        select.setString(1, code);
+        PreparedStatement select = bdd.prepareStatement("SELECT COUNT(joueur.idPartie),partie.id FROM joueur RIGHT JOIN partie ON partie.id=joueur.idPartie WHERE partie.id=?;");
+        select.setInt(1, idPartie);
         ResultSet resultSet = select.executeQuery();
         resultSet.next();
 
         // Vérifie si la partie existe, et qu'il reste de la place.
         int occurencePartie = resultSet.getInt(1);
-        int idPartie = resultSet.getInt(2);
+        idPartie = resultSet.getInt(2);
 
         if(idPartie == 0)
             throw new JoinException("Code de partie invalide", JoinException.Type.CODE_INVALID);

@@ -7,6 +7,7 @@ import java.util.Random;
 
 import dao.GameDAO;
 import dao.GameDAO.JoinException;
+import models.Player;
 import dao.PlayerDAO;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
@@ -27,7 +28,7 @@ public class GameController
             {
                 GameDAO gameDAO = new GameDAO();
                 gameDAO.createGame(code);
-                response.send(200, String.format("{\"code\":\"%s\"}", code));
+                response.json(gameDAO.getGame(code));
                 return;
             }
         } catch (SQLException e) 
@@ -120,13 +121,15 @@ public class GameController
         WebServerResponse response = context.getResponse();
 
         try {
-            String code = request.getParam("code");
-            String nickname = request.getParam("nickname");
+            int idPartie = Integer.parseInt(request.getParam("idPartie"));
+           
+            Player player = request.extractBody(Player.class);
+            System.out.println(player.nom());
             
             GameDAO gameDAO = new GameDAO();
             
-            gameDAO.playerJoin(code, nickname);
-            response.json(new PlayerDAO().getPlayers(code));
+            gameDAO.playerJoin(idPartie, player.nom());
+            response.json(new PlayerDAO().getPlayers(idPartie));
 
         } catch (SQLException e) {
             System.out.println(e);

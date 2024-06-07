@@ -1,3 +1,3 @@
 package models;
 
-public record Game(int id, String code, int score, String role_actuelle, String indice, int nombre) {}
+public record Game(int id, String code, int score, String tour, String indiceCourant, int doitDeviner) {}
