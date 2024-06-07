@@ -3,10 +3,12 @@ package controllers;
 import webserver.WebServerResponse;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Random;
 
 import dao.GameDAO;
 import dao.GameDAO.JoinException;
+import models.Game;
 import models.Player;
 import dao.PlayerDAO;
 import webserver.WebServerContext;
@@ -64,23 +66,34 @@ public class GameController
     }
 
     /**
-     * Affecte le role à un joueur
-     * Renvoie une erreur si le role n'existe pas ou le joueur.
+     * Échange les rôles des deux joueurs, ou d'un joueur si il n'y en a qu'un dans la partie.
+     * Renvoie une erreur si la partie n'existe pas ou qu'elle a débuté.
      * @param context
      */
-    public static void setRole(WebServerContext context)
+    public static void swapRole(WebServerContext context)
     {
         WebServerRequest request = context.getRequest();
         WebServerResponse response = context.getResponse();
 
-        int playerId = Integer.valueOf(request.getParam("idPlayer"));
-        String role = request.getParam("role");
         try {
+            int idPartie = Integer.valueOf(request.getParam("idPartie"));
+            
             PlayerDAO playerDAO = new PlayerDAO();
-            if(playerDAO.setRole(playerId, role))
-                response.ok("Role affecté");
-            else
-                response.serverError("Le joueur ou le role n'existe pas");
+            GameDAO gameDAO = new GameDAO();
+
+            Game game = gameDAO.getGame(idPartie);
+            
+            ArrayList<Player> players = playerDAO.getPlayers(idPartie);
+            
+            if(game == null)
+                response.serverError("Partie introuvable");
+            else if(players.size() == 0)
+                response.serverError("Aucun joueur dans la partie");
+            else if(players.size() == 1)
+            {
+
+            }
+
 
         } catch (SQLException e) {
             e.printStackTrace();

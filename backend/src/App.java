@@ -8,7 +8,7 @@ public class App {
         
         webServer.getRouter().put("/createGame", GameController::createGame);
         webServer.getRouter().put("/joinGame/:idPartie", GameController::playerJoin);
-        webServer.getRouter().put("/role/:idPlayer", GameController::setRole);
+        webServer.getRouter().post("/role/swap/:idPartie", GameController::swapRole);
         webServer.getRouter().post("/start/:idPartie", GameController::startGame);
 
         // webServer.getRouter().post("/role/:idPartie/:mot", GameController::setRole);

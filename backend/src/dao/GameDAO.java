@@ -16,6 +16,12 @@ public class GameDAO
         bdd = new PolynamesDatabase();
     }
 
+    /**
+     * Créer une partie 
+     * @param code Le code de la partie /!\ Doit être unique
+     * @return
+     * @throws SQLException
+     */
     public boolean createGame(String code) throws SQLException
     {
         PreparedStatement request = bdd.prepareStatement("INSERT INTO partie (code, score) VALUES (?, 0);");
@@ -24,34 +30,52 @@ public class GameDAO
         return true;
     }
     
+    /**
+     * Cherche une partie
+     * @param code le code de la partie
+     * @return La partie ou null si elle n'existe pas
+     * @throws SQLException Si erreur SQL
+     */
     public Game getGame(String code) throws SQLException
     {
         PreparedStatement request = bdd.prepareStatement("SELECT * FROM partie WHERE code=?;");
         request.setString(1, code);
         ResultSet result = request.executeQuery();
-        result.next();
+
+        if(!result.next())
+            return null;
+        
         result.findColumn("id");
         return new Game(result.getInt("id"), 
                         result.getString("code"), 
                         result.getInt("score"), 
-                        result.getString("tour"), 
                         result.getString("indiceCourant"), 
-                        result.getInt("doitDeviner"));
+                        result.getInt("doitDeviner"),
+                        result.getString("etat"));
     }
 
+    /**
+     * Cherche une partie
+     * @param id L'id de la partie
+     * @return La partie ou null si elle n'existe pas
+     * @throws SQLException Si erreur SQL
+     */
     public Game getGame(int id) throws SQLException
     {
         PreparedStatement request = bdd.prepareStatement("SELECT * FROM partie WHERE id=?;");
         request.setInt(1, id);
         ResultSet result = request.executeQuery();
-        result.next();
+       
+        if(!result.next())
+            return null;
+
         result.findColumn("id");
         return new Game(result.getInt("id"), 
                         result.getString("code"), 
                         result.getInt("score"), 
-                        result.getString("tour"), 
                         result.getString("indiceCourant"), 
-                        result.getInt("doitDeviner"));
+                        result.getInt("doitDeviner"),
+                        result.getString("etat"));
     }
 
     /**
@@ -65,6 +89,14 @@ public class GameDAO
         result.next();
         return result.getInt(1);
     }
+    /**
+     * Ajoute le joueur dans la partie
+     * @param idPartie L'id de la partie
+     * @param nickname Le pseudo du joueur le temps de la partie (temporaire)
+     * @return Si le joueur est dans la partie
+     * @throws SQLException
+     * @throws JoinException
+     */
 
     public boolean playerJoin(int idPartie, String nickname) throws SQLException, JoinException
     {
