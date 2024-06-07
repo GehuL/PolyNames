@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import database.PolynamesDatabase;
+import models.EEtatPartie;
 import models.Game;
 
 public class GameDAO 
@@ -51,7 +52,7 @@ public class GameDAO
                         result.getInt("score"), 
                         result.getString("indiceCourant"), 
                         result.getInt("doitDeviner"),
-                        result.getString("etat"));
+                        EEtatPartie.valueOf(result.getString("etat")));
     }
 
     /**
@@ -75,7 +76,7 @@ public class GameDAO
                         result.getInt("score"), 
                         result.getString("indiceCourant"), 
                         result.getInt("doitDeviner"),
-                        result.getString("etat"));
+                        EEtatPartie.valueOf(result.getString("etat")));
     }
 
     /**

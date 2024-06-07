@@ -87,7 +87,8 @@ public class GameController
             
             if(game == null)
                 response.serverError("Partie introuvable");
-            else if(players.size() == 0)
+
+                else if(players.size() == 0)
                 response.serverError("Aucun joueur dans la partie");
             else if(players.size() == 1)
             {
