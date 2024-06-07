@@ -8,6 +8,7 @@ import java.util.Random;
 
 import dao.GameDAO;
 import dao.GameDAO.JoinException;
+import models.EEtatPartie;
 import models.Game;
 import models.Player;
 import dao.PlayerDAO;
@@ -77,29 +78,61 @@ public class GameController
 
         try {
             int idPartie = Integer.valueOf(request.getParam("idPartie"));
+            ArrayList<Player> playersUpdated = swapRole(idPartie);
             
-            PlayerDAO playerDAO = new PlayerDAO();
-            GameDAO gameDAO = new GameDAO();
-
-            Game game = gameDAO.getGame(idPartie);
-            
-            ArrayList<Player> players = playerDAO.getPlayers(idPartie);
-            
-            if(game == null)
-                response.serverError("Partie introuvable");
-
-                else if(players.size() == 0)
-                response.serverError("Aucun joueur dans la partie");
-            else if(players.size() == 1)
-            {
-
-            }
-
+            if(playersUpdated.size() == 0)
+                response.serverError("Erreur lors du changement de role");
+            else
+                response.json(playersUpdated);
 
         } catch (SQLException e) {
             e.printStackTrace();
             response.serverError(e.getMessage());
         }
+    }
+    /**
+     * Échange le role entre entre deux joueurs ou d'un seul.
+     * @param idPartie L'id de la partie
+     * @return Les données mis à jour des joueurs. Vide si aucun joueur n'a été modifié
+     * @throws SQLException
+     */
+
+    private static ArrayList<Player> swapRole(int idPartie) throws SQLException
+    {
+        PlayerDAO playerDAO = new PlayerDAO();
+        GameDAO gameDAO = new GameDAO();
+
+        Game game = gameDAO.getGame(idPartie);
+
+        ArrayList<Player> players = playerDAO.getPlayers(idPartie);
+
+        // Partie n'existe pas ou déjà débuté ou pas de joueur
+        if(game == null || game.etat() != EEtatPartie.SELECTION_ROLE || players.size() == 0) 
+            return new ArrayList<>();
+
+        else if(players.size() == 1)
+        {
+            // Echange le role
+            String role = players.get(0).role().equals("maitre_intuition") ? "maitre_mot" : "maitre_intuition";
+            playerDAO.setRole(players.get(0).id(), role);
+            return playerDAO.getPlayers(game.id());
+        }else if(players.size() == 2)
+        {
+            // Echange le role entre les deux joueurs
+            Player player1 = players.get(0);
+            Player player2 = players.get(1);
+            if(player1.role().equals("maitre_intuition"))
+            {
+                playerDAO.setRole(player1.id(), "maitre_mot");
+                playerDAO.setRole(player2.id(), "maitre_intuition");
+            }else
+            {
+                playerDAO.setRole(player1.id(), "maitre_intuition");
+                playerDAO.setRole(player2.id(), "maitre_mot");
+            }
+           return playerDAO.getPlayers(game.id());
+        }
+        return new ArrayList<>();
     }
 
     /**
