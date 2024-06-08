@@ -5,7 +5,7 @@ public class App {
     public static void main(String[] args) throws Exception
     {
         WebServer webServer = new WebServer();
-        
+
         webServer.getRouter().put("/createGame", GameController::createGame);
         webServer.getRouter().put("/joinGame/:code", GameController::playerJoin);
         webServer.getRouter().post("/role/swap/:idPartie", GameController::swapRole);

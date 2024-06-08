@@ -1,21 +1,23 @@
 package controllers;
 
-import webserver.WebServerResponse;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Random;
 
 import dao.GameDAO;
 import dao.GameDAO.JoinException;
+import dao.PlayerDAO;
 import models.EEtatPartie;
 import models.Game;
 import models.Player;
-import dao.PlayerDAO;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
+import webserver.WebServerResponse;
 
-public class GameController
+/**
+ * Traite les requêtes en rapport avec la création d'une partie
+ */
+public class LobbyController
 {
     /**
      * Créer une partie. Renvoi un code de partie au client ou une erreur.
@@ -179,6 +181,11 @@ public class GameController
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    private static void generateRandomCards()
+    {
+        
     }
 
     /**
