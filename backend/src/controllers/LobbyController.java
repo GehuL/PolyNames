@@ -2,7 +2,6 @@ package controllers;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 
@@ -158,8 +157,6 @@ public class LobbyController
         WebServerRequest request = context.getRequest();
         WebServerResponse response = context.getResponse();
 
-        // TODO: Vérifier qu'il y a deux joueurs, avec deux roles différents et que la partie existe.
-        // TODO: Si partie OK, générer les cartes
         try {
             GameDAO gameDAO = new GameDAO();
             int idPartie = Integer.valueOf(request.getParam("idPartie"));
@@ -188,7 +185,6 @@ public class LobbyController
                 response.json(new CardDAO().getCards(idPartie));
             }
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
