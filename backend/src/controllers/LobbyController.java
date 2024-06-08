@@ -170,13 +170,16 @@ public class LobbyController
             if(game == null)
             {
                 response.serverError("Partie introuvable");
-            } else if(!game.etat().equals(EEtatPartie.SELECTION_ROLE))
+            } else if(game.etat() != EEtatPartie.SELECTION_ROLE)
             {
                 response.serverError("Partie déjà débuté");
                 // TODO: SSE EVENT
             }else if(players.size() < 2)
             {
                 response.serverError("La partie est en attente de joueur");
+            }else if(players.get(0).role().equals(players.get(1).role())) // Les deux roles sont identiques
+            {
+                response.serverError("Les roles doivent être différents");
             }else
             {
                 // Change le statut de la partie et génère les cartes aléatoirement
