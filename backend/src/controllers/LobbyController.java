@@ -2,14 +2,21 @@ package controllers;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
 
+import dao.CardDAO;
+import dao.DictionnaireDAO;
 import dao.GameDAO;
 import dao.GameDAO.JoinException;
 import dao.PlayerDAO;
+import models.Card;
+import models.ECardColor;
 import models.EEtatPartie;
 import models.Game;
 import models.Player;
+import models.Word;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
 import webserver.WebServerResponse;
@@ -172,20 +179,34 @@ public class LobbyController
                 response.serverError("La partie est en attente de joueur");
             }else
             {
+                // Change le statut de la partie et génère les cartes aléatoirement
+                generateRandomCards(idPartie);
                 gameDAO.startGame(idPartie);
-                response.json(gameDAO.getGame(idPartie));
+                response.json(new CardDAO().getCards(idPartie));
             }
-           // gameDAO.generateCards(idPartie);
-
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
-    private static void generateRandomCards()
+    private static void generateRandomCards(int idPartie) throws SQLException
     {
-        
+        // Génère 25 couleurs et les mets dans le désordre
+        ArrayList<ECardColor> colors = new ArrayList<>();
+        colors.addAll(Collections.nCopies(8, ECardColor.BLEU));
+        colors.addAll(Collections.nCopies(15, ECardColor.GRIS));
+        colors.addAll(Collections.nCopies(2, ECardColor.NOIR));
+        Collections.shuffle(colors);
+
+        CardDAO cardDAO = new CardDAO();
+
+        // Récupère 25 mots et créer des cartes
+        for(Word word : new DictionnaireDAO().getRandomWords(colors.size()))
+        {
+            Card card = new Card(idPartie, word.id(), false, colors.remove(0));
+            cardDAO.addCard(card);
+        }
     }
 
     /**

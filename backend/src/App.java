@@ -1,4 +1,4 @@
-import controllers.GameController;
+import controllers.LobbyController;
 import webserver.*;
 
 public class App {
@@ -6,12 +6,13 @@ public class App {
     {
         WebServer webServer = new WebServer();
 
-        webServer.getRouter().put("/createGame", GameController::createGame);
-        webServer.getRouter().put("/joinGame/:code", GameController::playerJoin);
-        webServer.getRouter().post("/role/swap/:idPartie", GameController::swapRole);
-        webServer.getRouter().post("/start/:idPartie", GameController::startGame);
+        // Routes pour la création de partie 
+        webServer.getRouter().put("/createGame", LobbyController::createGame);
+        webServer.getRouter().put("/joinGame/:code", LobbyController::playerJoin);
+        webServer.getRouter().post("/role/swap/:idPartie", LobbyController::swapRole);
+        webServer.getRouter().put("/start/:idPartie", LobbyController::startGame);
 
-        // webServer.getRouter().post("/role/:idPartie/:mot", GameController::setRole);
+        // Routes pour le déroulement de la partie
 
         webServer.listen(8080);
     }

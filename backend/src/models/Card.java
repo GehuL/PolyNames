@@ -1,3 +1,3 @@
 package models;
 
-public record Card(int gameId, String word, boolean revealed, ECardColor color) {}
+public record Card(int gameId, int wordId, boolean revealed, ECardColor color) {}

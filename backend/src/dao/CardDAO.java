@@ -1,10 +1,12 @@
 package dao;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import database.PolynamesDatabase;
-import models.DicoCard;
+import models.Card;
 import models.ECardColor;
 
 public class CardDAO 
@@ -17,18 +19,39 @@ public class CardDAO
     }
 
     /**
-     * Ajoute une carte dans la table Carte. La carte n'est pas révélée par défaut.
-     * @param idPartie L'id de la partie
-     * @param card La carte contenant l'id du mot
-     * @param color La couleur de la carte
+     * Ajoute une carte dans la table Carte.
      * @return True en cas de succés de la requête
      */
-    public boolean addCard(int idPartie, DicoCard card, ECardColor color) throws SQLException
+    public boolean addCard(Card card) throws SQLException
     {
-        PreparedStatement statement = bdd.prepareStatement("INSERT INTO carte idPartie, idMot, couleur, revelee VALUES (?,?,?,false);");
-        statement.setInt(1, idPartie);
-        statement.setInt(2, card.id());
-        statement.setString(3, color.toString());
+        PreparedStatement statement = bdd.prepareStatement("INSERT INTO carte (idPartie, idMot, couleur, revelee) VALUES (?,?,?,?);");
+        statement.setInt(1, card.gameId());
+        statement.setInt(2, card.wordId());
+        statement.setString(3, card.color().toString());
+        statement.setBoolean(4, card.revealed());
         return statement.executeUpdate() > 0;
+    }
+
+    /**
+     * Renvoie les cartes associés à une partie.
+     * @param idPartie
+     * @return La liste des cartes. Peut être vide si la partie n'existe pas ou qu'il n'y a pas encore de carte.
+     * @throws SQLException
+     */
+    public ArrayList<Card> getCards(int idPartie) throws SQLException
+    {
+        PreparedStatement statement = bdd.prepareStatement("SELECT * FROM carte WHERE idPartie=?;");
+        statement.setInt(1, idPartie);
+        ResultSet result = statement.executeQuery();
+        ArrayList<Card> cards = new ArrayList<>();
+        while(result.next())
+        {
+            cards.add(new Card(result.getInt("idPartie"), 
+                                    result.getInt("idMot"), 
+                                    result.getBoolean("revelee"),
+                                    ECardColor.valueOf(result.getString("couleur"))));
+            
+        }
+        return cards;
     }
 }

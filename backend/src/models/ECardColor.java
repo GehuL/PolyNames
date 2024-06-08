@@ -2,7 +2,7 @@ package models;
 
 public enum ECardColor
 {
-    GRAY,
-    BLUE,
-    BLACK
+    BLEU,
+    GRIS,
+    NOIR
 }
