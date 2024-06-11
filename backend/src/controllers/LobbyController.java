@@ -181,7 +181,7 @@ public class LobbyController
             {
                 // Change le statut de la partie et génère les cartes aléatoirement
                 generateRandomCards(idPartie);
-                gameDAO.startGame(idPartie);
+                gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
                 response.json(new CardDAO().getCards(idPartie));
             }
         } catch (SQLException e) {

@@ -1,3 +1,4 @@
+import controllers.GameController;
 import controllers.LobbyController;
 import webserver.WebServer;
 
@@ -13,6 +14,8 @@ public class App {
         webServer.getRouter().put("/start/:idPartie", LobbyController::startGame);
 
         // Routes pour le déroulement de la partie
+        webServer.getRouter().post("/guess/:idPartie", GameController::guess);
+        webServer.getRouter().post("/clue/:idPartie", GameController::clue);
 
         webServer.listen(8080);
     }   

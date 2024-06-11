@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import database.PolynamesDatabase;
+import models.Clue;
 import models.EEtatPartie;
 import models.Game;
 
@@ -125,10 +126,33 @@ public class GameDAO
         return idPartie;
     }
 
-    public boolean startGame(int idPartie) throws SQLException
+    /**
+     * Définie l'état de la partie courante
+     * @param idPartie
+     * @return Si la partie à été modifié
+     * @throws SQLException
+     */
+    public boolean setState(int idPartie, EEtatPartie etatPartie) throws SQLException
     {
-        PreparedStatement statement = bdd.prepareStatement("UPDATE partie SET etat='CHOISIR_INDICE' WHERE id=?;");
-        statement.setInt(1, idPartie);
+        PreparedStatement statement = bdd.prepareStatement("UPDATE partie SET etat=? WHERE id=?;");
+        statement.setString(1, etatPartie.toString());
+        statement.setInt(2, idPartie);
+        return statement.executeUpdate() > 0;
+    }
+
+    /**
+     * Définine l'indice courant et le nombre de mots à trouver.
+     * @param idPartie L'ID de la partie
+     * @param clue  L'indice
+     * @return Si la partie à été modifié
+     * @throws SQLException 
+     */
+    public boolean setClue(int idPartie, Clue clue) throws SQLException
+    {
+        PreparedStatement statement = bdd.prepareStatement("UPDATE partie SET indiceCourant=?,doitDeviner=? WHERE id=?;");
+        statement.setString(1, clue.clue());
+        statement.setInt(2, clue.toFind());
+        statement.setInt(3, idPartie);
         return statement.executeUpdate() > 0;
     }
 
