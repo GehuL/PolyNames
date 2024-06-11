@@ -29,10 +29,6 @@ async function newGame(){
         let code = JSON.parse(data).code;
         console.log(code)
         loadGame(code)
-
-
-        
-       
     }   
     return null;
 }

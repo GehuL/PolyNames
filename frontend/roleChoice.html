@@ -8,14 +8,27 @@
 </head>
 <body>
     <div class="roleChoice">
-        <h1>Polynames</h1>
-        <button id="role_swap">Changer de role</button>
-        <b>OU</b>
-        <!--<button id="random">Aléatoire</button>-->
-        <button id="start">Pret</button>
-    </div>
-    <div id="current_role">Vous etes actuellement maitre_mot</div>
-    <div id="game_code"></div>
+        <h1 id="room">ROOM #FG50P</h1>
+
+        <div id="players">
+            <div id="role">
+                <label id="nom_player1">MAITRE DES INTUITIONS</label>
+                <label id="nom_player2">MAITRE DES MOTS</label>
+            </div>
+
+            <div id="nom">
+                <label id="nom_player1">🕵️ PLAYER 1</label>
+                <label id="nom_player2">🕵️ PLAYER 2</label>
+            </div>
+        </div>
+        
+        <div id="btn_choice">
+            <button id="role_swap">CHANGER DE ROLE</button>
+            <button id="random">AÉATOIRE</button>
+            <button id="start">DÉMARRER</button>
+        </div>
     
+    </div>
+    <div id="game_code"></div>
     <script src="js/roleChoiceLoader.js" type="module"></script>
 </body>
