@@ -9,7 +9,7 @@ public class App {
 
         // Routes pour la création de partie 
         webServer.getRouter().put("/createGame", LobbyController::createGame);
-        webServer.getRouter().put("/joinGame/:code", LobbyController::playerJoin);
+        webServer.getRouter().put("/joinGame/:code", LobbyController::joinGame);
         webServer.getRouter().post("/role/swap/:idPartie", LobbyController::swapRole);
         webServer.getRouter().put("/start/:idPartie", LobbyController::startGame);
 

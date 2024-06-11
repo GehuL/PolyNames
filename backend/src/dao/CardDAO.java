@@ -46,7 +46,8 @@ public class CardDAO
         ArrayList<Card> cards = new ArrayList<>();
         while(result.next())
         {
-            cards.add(new Card(result.getInt("idPartie"), 
+            cards.add(new Card(result.getInt("id"), 
+                                    result.getInt("idPartie"), 
                                     result.getInt("idMot"), 
                                     result.getBoolean("revelee"),
                                     ECardColor.valueOf(result.getString("couleur"))));
@@ -72,7 +73,11 @@ public class CardDAO
         if(!result.next())
             return null;
 
-        return new Card(idPartie, idCarte, result.getBoolean("revelee"), ECardColor.valueOf(result.getString("couleur")));
+        return new Card(result.getInt("id"), 
+                    idPartie, 
+                    idCarte, 
+                    result.getBoolean("revelee"), 
+                    ECardColor.valueOf(result.getString("couleur")));
     }
 
     public boolean revealCard(int idPartie, int idCard) throws SQLException

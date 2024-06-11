@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import database.PolynamesDatabase;
+import models.EPlayerRole;
 import models.Player;
 
 public class PlayerDAO
@@ -34,7 +35,7 @@ public class PlayerDAO
             players.add(new Player(result.getInt("id"), 
                     result.getString("nom"), 
                     result.getInt("idPartie"), 
-                    result.getString("role")));
+                    EPlayerRole.valueOf(result.getString("role"))));
         return players;
     }
 
@@ -45,10 +46,10 @@ public class PlayerDAO
      * @return Renvoie true si le joueur à été modifié, sinon false (si le joueur n'existe pas)
      * @throws SQLException
      */
-    public boolean setRole(int idPlayer, String role) throws SQLException
+    public boolean setRole(int idPlayer, EPlayerRole role) throws SQLException
     {
         PreparedStatement request = bdd.prepareStatement("UPDATE joueur SET role=? WHERE id=?;");
-        request.setString(1, role);
+        request.setString(1, role.toString());
         request.setInt(2, idPlayer);
         return request.executeUpdate() > 0;
     }
@@ -72,7 +73,7 @@ public class PlayerDAO
         return new Player(result.getInt("id"), 
                 result.getString("nom"), 
                 result.getInt("idPartie"), 
-                result.getString("role"));
+                EPlayerRole.valueOf(result.getString("role")));
     }
 
     /** 
@@ -96,12 +97,12 @@ public class PlayerDAO
      * @param nickname
      * @throws SQLException
      */
-    public void createPlayer(String nickname, int partieId, String role) throws SQLException
+    public void createPlayer(String nickname, int partieId, EPlayerRole role) throws SQLException
     {
-        PreparedStatement request = bdd.prepareStatement("INSERT INTO joueur (idPartie, nom, role) VALUES (?, ?, 'maitre_intuition');");
+        PreparedStatement request = bdd.prepareStatement("INSERT INTO joueur (idPartie, nom, role) VALUES (?, ?, 'MAITRE_INTUITION');");
         request.setInt(1, partieId);
         request.setString(2, nickname);
-        request.setString(3, role);
+        request.setString(3, role.toString());
         request.execute();
     }
 }

@@ -10,6 +10,7 @@ import models.ECardColor;
 import models.EEtatPartie;
 import models.Game;
 import models.Guess;
+import models.GuessRound;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
 import webserver.WebServerResponse;
@@ -20,7 +21,14 @@ import webserver.WebServerResponse;
 public class GameController
 {
     /**
-     * Traite les requêtes pour les indices
+     * Traite les requêtes pour les indices.
+     *
+     * Exemple Request payload (JSON): {"clue": "BANANE", "toFind": "5"}
+     * Exemple SSE payload (JSON): {"clue": "BANANE", "toFind": "5"}
+     *
+     * Renvoie un code d'erreur 500 si la partie n'existe pas ou que ce n'est pas au tour du maitre des mots.
+     * En cas de succés, le serveur renvoie un code OK.
+     * Le mot est transmis au SSE de l'autre joueur.
      * @param context
      */
     public static void clue(WebServerContext context)
@@ -54,7 +62,7 @@ public class GameController
                 return;
             }
 
-            response.json(clue);
+            response.ok("Ok");
             // TODO:: Emetre SSE à l'autre joueur
 
         } catch (SQLException e) {
@@ -63,6 +71,18 @@ public class GameController
         }
     }
 
+    /**
+     * Traite les mots devinés par le maitre des intuitions.
+     * Renvoie un code d'erreur 500 si la partie n'existe pas, ce n'est pas le tour du maitre des intuitions, 
+     * la carte est déjà révelée ou n'existe pas dans la partie, 
+     * le nombre max de carte révelée est atteint (N + 1).
+     * En cas de succés, un JSON est renvoyé au deux joueurs.
+     * 
+     * Exemple Request payload (JSON): {"idCard": 5}
+     * Exemple SSE et Response payload (JSON): {"etatPartie": "DEVINER", "score": 12, "dejaTrouvee": 2, "color": "BLEU", "idCard": 7}
+     * 
+     * @param context
+     */
     public static void guess(WebServerContext context)
     {
         WebServerRequest request = context.getRequest();
@@ -79,13 +99,13 @@ public class GameController
 
             Game game = gameDAO.getGame(idPartie);
             
-            if(game == null || game.etat() != EEtatPartie.DEVINER || game.doitDeviner() == 0)
+            if(game == null || game.etat() != EEtatPartie.DEVINER || game.dejaTrouvee() >= game.doitDeviner() + 1)
             {
                 response.serverError("Server error");
                 return;
             }
 
-            Card card = cardDAO.getCard(idPartie, idPartie);
+            Card card = cardDAO.getCard(idPartie, guess.idCard());
             
             if(card == null)
             {
@@ -99,25 +119,37 @@ public class GameController
                 return;
             }
 
-            if(card.color() == ECardColor.NOIR)
+            if(card.color() == ECardColor.NOIR) // Partie finie
             {
                 gameDAO.setState(idPartie, EEtatPartie.FIN);
-            }else if(card.color() == ECardColor.GRIS)
+                gameDAO.setDejaTrouvee(idPartie, 0);
+            }else if(card.color() == ECardColor.GRIS) // Tour finie
             {
                 gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-            }else
+                gameDAO.setDejaTrouvee(idPartie, 0); // Reset le compteur de cartes trouvées ce tour
+            }else // BLEU
             {
-                int nbrIndice = game.doitDeviner() - 1;
+                int nbrTrouvee = game.dejaTrouvee() + 1;
 
-                if(nbrIndice == 0)
+                int score = game.score();
+
+                if(nbrTrouvee >= game.doitDeviner() + 1)
                 {
                     gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
+                    gameDAO.setDejaTrouvee(idPartie, 0);
+                    score += nbrTrouvee * nbrTrouvee; // score += N² 
+                }else
+                {
+                    gameDAO.setDejaTrouvee(idPartie, nbrTrouvee);
+                    score += nbrTrouvee;
                 }
 
-                gameDAO.setClue(idPartie, new Clue(game.indiceCourant(), game.doitDeviner() - 1));
+                gameDAO.setScore(idPartie, score);
             }
-            
-            response.json(card);
+            cardDAO.revealCard(idPartie, card.cardId());
+
+            Game newState = gameDAO.getGame(idPartie);
+            response.json(new GuessRound(newState.etat(), game.score(), game.dejaTrouvee(), card.color(), card.cardId()));
 
         } catch (SQLException e) 
         {

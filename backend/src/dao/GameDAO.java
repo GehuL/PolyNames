@@ -158,6 +158,28 @@ public class GameDAO
         return statement.executeUpdate() > 0;
     }
 
+    public boolean setDejaTrouvee(int idPartie, int dejaTrouvee) throws SQLException
+    {
+        PreparedStatement statement = bdd.prepareStatement("UPDATE partie SET dejaTrouvee=? WHERE id=?;");
+        statement.setInt(1, dejaTrouvee);
+        statement.setInt(2, idPartie);
+        return statement.executeUpdate() > 0;
+    }
+
+    /**
+     * Définie le score de la partie
+     * @param idPartie
+     * @param score
+     * @throws SQLException 
+     */
+    public boolean setScore(int idPartie, int score) throws SQLException 
+    {
+        PreparedStatement statement = bdd.prepareStatement("UPDATE partie SET score=? WHERE id=?;");
+        statement.setInt(1, score);
+        statement.setInt(2, idPartie);
+        return statement.executeUpdate() > 0;
+    }
+
     public class JoinException extends Exception
     {
         enum Type

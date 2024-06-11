@@ -13,6 +13,7 @@ import dao.PlayerDAO;
 import models.Card;
 import models.ECardColor;
 import models.EEtatPartie;
+import models.EPlayerRole;
 import models.Game;
 import models.Player;
 import models.Word;
@@ -80,7 +81,9 @@ public class LobbyController
 
     /**
      * Échange les rôles des deux joueurs, ou d'un joueur si il n'y en a qu'un dans la partie.
-     * Renvoie une erreur si la partie n'existe pas ou qu'elle a débuté.
+     * Renvoie un code d'erreur 500 si la partie n'existe pas ou qu'elle a débuté.
+     * Sinon un code 200.
+     * Exemple SSE payload (JSON): {"role": ""}
      * @param context
      */
     public static void swapRole(WebServerContext context)
@@ -123,29 +126,18 @@ public class LobbyController
         if(game == null || game.etat() != EEtatPartie.SELECTION_ROLE || players.size() == 0) 
             return new ArrayList<>();
 
-        else if(players.size() == 1)
+        // Echange le role entre les deux joueurs
+        Player player1 = players.get(0);
+        
+        playerDAO.setRole(player1.id(), player1.role().inverse());
+        
+        if(players.size() > 1)
         {
-            // Echange le role
-            String role = players.get(0).role().equals("maitre_intuition") ? "maitre_mot" : "maitre_intuition";
-            playerDAO.setRole(players.get(0).id(), role);
-            return playerDAO.getPlayers(game.id());
-        }else if(players.size() == 2)
-        {
-            // Echange le role entre les deux joueurs
-            Player player1 = players.get(0);
             Player player2 = players.get(1);
-            if(player1.role().equals("maitre_intuition"))
-            {
-                playerDAO.setRole(player1.id(), "maitre_mot");
-                playerDAO.setRole(player2.id(), "maitre_intuition");
-            }else
-            {
-                playerDAO.setRole(player1.id(), "maitre_intuition");
-                playerDAO.setRole(player2.id(), "maitre_mot");
-            }
-           return playerDAO.getPlayers(game.id());
+            playerDAO.setRole(player2.id(), player1.role());
         }
-        return new ArrayList<>();
+
+        return playerDAO.getPlayers(game.id());
     }
 
     /**
@@ -167,7 +159,7 @@ public class LobbyController
             if(game == null)
             {
                 response.serverError("Partie introuvable");
-            } else if(game.etat() != EEtatPartie.SELECTION_ROLE)
+            }else if(game.etat() != EEtatPartie.SELECTION_ROLE)
             {
                 response.serverError("Partie déjà débuté");
                 // TODO: SSE EVENT
@@ -203,7 +195,8 @@ public class LobbyController
         // Récupère 25 mots et créer des cartes
         for(Word word : new DictionnaireDAO().getRandomWords(colors.size()))
         {
-            Card card = new Card(idPartie, word.id(), false, colors.remove(0));
+            // L'ID ne sert à rien ici car il est généré dans la BDD
+            Card card = new Card(0, idPartie, word.id(), false, colors.remove(0));
             cardDAO.addCard(card);
         }
     }
@@ -214,7 +207,7 @@ public class LobbyController
      * Renvoie la liste des joueurs en cas de succés.
      * @param context
      */
-    public static void playerJoin(WebServerContext context)
+    public static void joinGame(WebServerContext context)
     {
         WebServerRequest request = context.getRequest();
         WebServerResponse response = context.getResponse();
