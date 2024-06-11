@@ -1,5 +1,5 @@
 import controllers.LobbyController;
-import webserver.*;
+import webserver.WebServer;
 
 public class App {
     public static void main(String[] args) throws Exception
@@ -15,5 +15,5 @@ public class App {
         // Routes pour le déroulement de la partie
 
         webServer.listen(8080);
-    }
+    }   
 }
