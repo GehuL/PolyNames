@@ -5,8 +5,12 @@ function run(){
         newGame();
     })
     document.getElementById("joinGame").addEventListener("click",()=>{
-        _pseudo=document.getElementsByName("PSEUDO")//non plus
-        loadGame(_pseudo);
+        
+        const placeHolderCode=document.getElementById("code_placeholder").value
+        const placeHolderPseudo=document.getElementById("pseudo_placeholder").value
+        console.log(placeHolderCode)
+        console.log(placeHolderPseudo)
+        //loadGame(placeHolderCode);
     })
 }
 
@@ -19,28 +23,30 @@ const baseURI = "http://localhost:5500/"
 
 async function newGame(){
     let game =  await fetch("http://localhost:8080/createGame",{method:"put"});
-    const pseudo = "toto";
 
     if(game.status==200){
 
-        //window.location.href="/frontend/roleChoice.html"
-        localStorage.setItem("game_data",await game.json());
+        localStorage.setItem("game_data",await game.text());
+        let data= localStorage.getItem("game_data")
+        let code = JSON.parse(data).code;
+        console.log(code)
+        loadGame(code)
 
 
-        //console.log( game.json())
-        //loadGame(pseudo)  
         
        
-    }
+    }   
     return null;
 }
 
-async function loadGame(pseudo){
-    const load = await fetch("http://localhost:8080/joinGame/"+"pseudo")
+async function loadGame(code){
+    const name={nom:"louis"}
+    const load = await fetch("http://localhost:8080/joinGame/"+code,{method:"put",headers: {"Content-Type": "application/json"},body:JSON.stringify(name)})
     if(load.status==200){
-        const sseClient =  new sseClient("http://localhost:8080");
-        await sseClient.connect();  
-        window.location.href= "../roleChoice.html"
+        /*const sseClient =  new sseClient("http://localhost:8080");
+        await sseClient.connect();
+        console.log("connecte au sse client")*/
+        window.location.href= "/frontend/roleChoice.html"
     }
     return null;
 }
