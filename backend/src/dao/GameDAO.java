@@ -53,6 +53,7 @@ public class GameDAO
                         result.getInt("score"), 
                         result.getString("indiceCourant"), 
                         result.getInt("doitDeviner"),
+                        result.getInt("dejaTrouvee"),
                         EEtatPartie.valueOf(result.getString("etat")));
     }
 
@@ -77,6 +78,7 @@ public class GameDAO
                         result.getInt("score"), 
                         result.getString("indiceCourant"), 
                         result.getInt("doitDeviner"),
+                        result.getInt("dejaTrouvee"),
                         EEtatPartie.valueOf(result.getString("etat")));
     }
 

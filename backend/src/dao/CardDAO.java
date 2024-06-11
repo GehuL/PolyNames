@@ -54,4 +54,33 @@ public class CardDAO
         }
         return cards;
     }
+
+    /**
+     * Obtient une carte d'une partie depuis la BDD 
+     * @param idPartie 
+     * @param idCarte
+     * @return Card ou null si la partie n'existe pas ou la carte
+     * @throws SQLException
+     */
+    public Card getCard(int idPartie, int idCarte) throws SQLException
+    {
+        PreparedStatement statement = bdd.prepareStatement("SELECT * FROM carte WHERE idPartie=? AND id=?;");
+        statement.setInt(1, idPartie);
+        statement.setInt(2, idCarte);
+
+        ResultSet result = statement.executeQuery();
+        if(!result.next())
+            return null;
+
+        return new Card(idPartie, idCarte, result.getBoolean("revelee"), ECardColor.valueOf(result.getString("couleur")));
+    }
+
+    public boolean revealCard(int idPartie, int idCard) throws SQLException
+    {
+        PreparedStatement statement = bdd.prepareStatement("UPDATE carte SET revelee=? WHERE idPartie=? AND id=?;");
+        statement.setBoolean(1, true);
+        statement.setInt(2, idPartie);
+        statement.setInt(3, idCard);
+        return statement.executeUpdate() > 0;
+    }
 }
