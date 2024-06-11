@@ -1,37 +1,33 @@
 window.addEventListener("load",run)
 
 function run(){
-    document.getElementById("wordsMaster").addEventListener("click",()=>{
-        Choice("wordsMaster");
-        const start = fetch("hhtp://localhost:8080/start/:")// il manque l'idPartie
-        window.location.replace("../wordsMaster.html")
+    document.getElementById("role_swap").addEventListener("click",()=>{
+        roleSwap();
 
     })
+    const data=localStorage.getItem("game_data")
+    const gameCode=JSON.parse(data).code
+    document.getElementById("game_code").innerHTML="Partagez le code de la partie "+gameCode
 
-    document.getElementById("intuitionMaster").addEventListener("click",()=>{
-        Choice("intuitionMaster")
-        const start = fetch("hhtp://localhost:8080/start/:")// il manque l'idPartie
-        window.location.replace("../intuitionMaster.html")
 
-    })
-
-    document.getElementById("random").addEventListener("click",()=>{
-        randomChoice();
-
-    })
 }
 
 
-async function randomChoice(){
-    const role= await fetch("http://localhost:8080/role/random")
-    if(role.status ==200){
-        //rediriger et affecter le role 
+
+async function roleSwap(){
+    const data=localStorage.getItem("game_data")
+    const id_partie=JSON.parse(data).id;
+
+    const role= await fetch("http://localhost:8080/role/swap/"+id_partie,{method:"post"})
+
+    if(role.status==200){
+        let i =await role.json()
+        document.getElementById("current_role").innerHTML="Vous etes actuellement " +i[0].role
+        
     }
-    return null
-}
+    if(role.status==500){
+        alert("ca n a pas marche ")
+    }
 
-async function Choice(role){
-    const role= await fetch("http://localhost:8080/"+role)//il manque l idplayer
-
-
+    
 }
