@@ -19,20 +19,38 @@ public class PlayerDAO
 
     /**
      * Renvoie les joueurs présents dans une partie.
-     * @param code Le code d'une partie
+     * @param idPartie L'id de la partie
      * @return La liste des joueurs dans la partie, peut être vide
      * @throws SQLException 
      */
-    public ArrayList<Player> getPlayers(String code) throws SQLException
+    public ArrayList<Player> getPlayers(int idPartie) throws SQLException
     {
         // récupère les joueurs dans la partie correspondante
-        PreparedStatement request = bdd.prepareStatement("SELECT joueur.id, joueur.idPartie, role, nom FROM joueur INNER JOIN partie ON joueur.idPartie=partie.id WHERE partie.code=?;");
-        request.setString(1, code);
+        PreparedStatement request = bdd.prepareStatement("SELECT * FROM joueur INNER JOIN partie ON joueur.idPartie=partie.id WHERE partie.id=?;");
+        request.setInt(1, idPartie);
         ResultSet result = request.executeQuery();
         ArrayList<Player> players = new ArrayList<>();
         while(result.next())
-            players.add(new Player(result.getInt(1), result.getInt(2) , result.getString(3), result.getString(4)));
+            players.add(new Player(result.getInt("id"), 
+                    result.getString("nom"), 
+                    result.getInt("idPartie"), 
+                    result.getString("role")));
         return players;
+    }
+
+    /**
+     * Définie le role du joeur ('maitre_mot' ou 'maitre_intuition')
+     * @param idPlayer L'id du joueur
+     * @param role Le role 
+     * @return Renvoie true si le joueur à été modifié, sinon false (si le joueur n'existe pas)
+     * @throws SQLException
+     */
+    public boolean setRole(int idPlayer, String role) throws SQLException
+    {
+        PreparedStatement request = bdd.prepareStatement("UPDATE joueur SET role=? WHERE id=?;");
+        request.setString(1, role);
+        request.setInt(2, idPlayer);
+        return request.executeUpdate() > 0;
     }
 
     /**
@@ -44,14 +62,17 @@ public class PlayerDAO
     public Player getPlayer(int id) throws SQLException
     {
         // Cherche le pseudo dans la BDD
-        PreparedStatement select = bdd.prepareStatement("SELECT joueur.id, joueur.idPartie, role, nom  FROM joueur WHERE id=?;");
+        PreparedStatement select = bdd.prepareStatement("SELECT * FROM joueur WHERE id=?;");
         select.setInt(1, id);
         ResultSet result = select.executeQuery();
         
         if(!result.next())
             return null; 
 
-        return new Player(result.getInt(1), result.getInt(2) , result.getString(3), result.getString(4));
+        return new Player(result.getInt("id"), 
+                result.getString("nom"), 
+                result.getInt("idPartie"), 
+                result.getString("role"));
     }
 
     /** 
