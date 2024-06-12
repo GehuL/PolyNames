@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import dao.GameDAO.JoinException;
 import database.PolynamesDatabase;
 import models.EPlayerRole;
 import models.Player;
@@ -122,7 +121,7 @@ public class PlayerDAO
      * @throws JoinException
      */
     @Deprecated
-    public int playerJoin(int idPartie, String nickname) throws SQLException, JoinException
+    public int playerJoin(int idPartie, String nickname) throws SQLException
     {
         // ajoute le joueur dans la partie
         PreparedStatement request = bdd.prepareStatement("INSERT INTO joueur (idPartie, nom, role) VALUES (?, ?, 'maitre_intuition');");

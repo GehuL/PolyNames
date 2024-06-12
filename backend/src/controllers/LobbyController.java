@@ -8,7 +8,6 @@ import java.util.Random;
 import dao.CardDAO;
 import dao.DictionnaireDAO;
 import dao.GameDAO;
-import dao.GameDAO.JoinException;
 import dao.PlayerDAO;
 import models.Card;
 import models.ECardColor;
@@ -268,6 +267,9 @@ public class LobbyController
             if(game == null)
                 throw new JoinException("Code de partie invalide", JoinException.Type.CODE_INVALID);
             
+            if(game.etat() != EEtatPartie.SELECTION_ROLE)
+                throw new JoinException("La partie à déjà commencé", JoinException.Type.STATE_INVALID);
+
             PlayerDAO playerDAO = new PlayerDAO();
 
             if (playerDAO.getPlayers(game.id()).size() >= 2)
@@ -302,5 +304,28 @@ public class LobbyController
                 code += (char) (random.nextInt(26) + 65);
         }
         return code;
+    }
+
+    public static class JoinException extends Exception
+    {
+        public enum Type
+        {
+            MAX_PLAYER,
+            CODE_INVALID,
+            PLAYER_INVALID,
+            STATE_INVALID
+        }
+
+        private Type type;
+
+        public JoinException(String message, Type type) {
+            super(message);
+            this.type=type;
+        }
+
+        public Type getType()
+        {
+            return type;
+        }
     }
 }

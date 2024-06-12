@@ -145,26 +145,4 @@ public class GameDAO
         statement.setInt(2, idPartie);
         return statement.executeUpdate() > 0;
     }
-
-    public class JoinException extends Exception
-    {
-        public enum Type
-        {
-            MAX_PLAYER,
-            CODE_INVALID,
-            PLAYER_INVALID
-        }
-
-        private Type type;
-
-        public JoinException(String message, Type type) {
-            super(message);
-            this.type=type;
-        }
-
-        public Type getType()
-        {
-            return type;
-        }
-    }
 }
