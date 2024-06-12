@@ -41,6 +41,8 @@ async function loadGame(code){
         await sseClient.connect();
         console.log("connecte au sse client")*/
         window.location.href= "/roleChoice.html"
+        const payload = await load.json()
+        //localStorage.setItem("playerId", payload.)
     }
     return null;
 }
