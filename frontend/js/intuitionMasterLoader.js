@@ -5,7 +5,7 @@ const child=document.createElement("word")
 child.classList()// lui mettre la couleur mais ne pas l'afficher
 words.appenChild(child)
 
-
+//a voir comment on recupere les mots, si role==intuitionMaster, alors ne pas display les couleurs, sinon les afficher
 
 
 
