@@ -95,14 +95,43 @@ public class PlayerDAO
     /**
      *  Créer un joueur temporaire. (Supprimé quand la partie est supprimé)
      * @param nickname
+     * @return L'id du joueur ou zéro si erreur
      * @throws SQLException
      */
-    public void createPlayer(String nickname, int partieId, EPlayerRole role) throws SQLException
+    public int createPlayer(String nickname, int partieId, EPlayerRole role) throws SQLException
     {
-        PreparedStatement request = bdd.prepareStatement("INSERT INTO joueur (idPartie, nom, role) VALUES (?, ?, 'MAITRE_INTUITION');");
+        PreparedStatement request = bdd.prepareStatement("INSERT INTO joueur (idPartie, nom, role) VALUES (?, ?, ?);");
         request.setInt(1, partieId);
         request.setString(2, nickname);
         request.setString(3, role.toString());
         request.execute();
+        
+        PreparedStatement lastRequest = bdd.prepareStatement("SELECT LAST_INSERT_ID();");
+        ResultSet lastResult = lastRequest.executeQuery();
+        lastResult.next();
+        return lastResult.getInt(1);
+    }
+
+       /**
+     * Ajoute le joueur dans la partie
+     * @param idPartie L'id de la partie
+     * @param nickname Le pseudo du joueur le temps de la partie (temporaire)
+     * @return Le joueur nouvellement créé
+     * @throws SQLException
+     * @throws JoinException
+     */
+    @Deprecated
+    public int playerJoin(int idPartie, String nickname) throws SQLException
+    {
+        // ajoute le joueur dans la partie
+        PreparedStatement request = bdd.prepareStatement("INSERT INTO joueur (idPartie, nom, role) VALUES (?, ?, 'maitre_intuition');");
+        request.setInt(1, idPartie);
+        request.setString(2, nickname);
+        request.execute();
+
+        PreparedStatement lastRequest = bdd.prepareStatement("SELECT LAST_INSERT_ID();");
+        ResultSet lastResult = lastRequest.executeQuery();
+        lastResult.next();
+        return lastResult.getInt(1);
     }
 }

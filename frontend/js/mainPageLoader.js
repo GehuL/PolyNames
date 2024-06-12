@@ -10,7 +10,7 @@ function run(){
         const placeHolderPseudo=document.getElementById("pseudo_placeholder").value
         console.log(placeHolderCode)
         console.log(placeHolderPseudo)
-        //loadGame(placeHolderCode);
+        loadGame(placeHolderCode);
     })
 }
 

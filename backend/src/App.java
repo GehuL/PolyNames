@@ -12,10 +12,14 @@ public class App {
         webServer.getRouter().put("/joinGame/:code", LobbyController::joinGame);
         webServer.getRouter().post("/role/swap/:idPartie", LobbyController::swapRole);
         webServer.getRouter().put("/start/:idPartie", LobbyController::startGame);
+        webServer.getRouter().put("/start/random/:idPartie", LobbyController::startGameRandomly);
 
         // Routes pour le déroulement de la partie
         webServer.getRouter().post("/guess/:idPartie", GameController::guess);
         webServer.getRouter().post("/clue/:idPartie", GameController::clue);
+
+        // Utilitaires
+        webServer.getRouter().get("/players/:idPartie", LobbyController::getPlayers);
 
         webServer.listen(8080);
     }   

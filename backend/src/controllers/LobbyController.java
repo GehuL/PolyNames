@@ -8,7 +8,6 @@ import java.util.Random;
 import dao.CardDAO;
 import dao.DictionnaireDAO;
 import dao.GameDAO;
-import dao.GameDAO.JoinException;
 import dao.PlayerDAO;
 import models.Card;
 import models.ECardColor;
@@ -173,6 +172,50 @@ public class LobbyController
                 // Change le statut de la partie et génère les cartes aléatoirement
                 generateRandomCards(idPartie);
                 gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
+                response.json(players);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void startGameRandomly(WebServerContext context)
+    {
+        WebServerRequest request = context.getRequest();
+        WebServerResponse response = context.getResponse();
+
+        try {
+            GameDAO gameDAO = new GameDAO();
+            int idPartie = Integer.valueOf(request.getParam("idPartie"));
+
+            Game game = gameDAO.getGame(idPartie);
+            ArrayList<Player> players = new PlayerDAO().getPlayers(idPartie);
+
+            if(game == null)
+            {
+                response.serverError("Partie introuvable");
+            }else if(game.etat() != EEtatPartie.SELECTION_ROLE)
+            {
+                response.serverError("Partie déjà débuté");
+            }else if(players.size() < 2)
+            {
+                response.serverError("La partie est en attente de joueur");
+            }else
+            {
+                if(new Random().nextBoolean()) // Une chance sur deux d'inverser les roles
+                {
+                    PlayerDAO playerDAO = new PlayerDAO();
+                 
+                    Player player1 = players.get(0);
+                    Player player2 = players.get(1);
+
+                    playerDAO.setRole(player1.id(), player1.role().inverse());
+                    playerDAO.setRole(player2.id(), player1.role());
+                }
+
+                // Change le statut de la partie et génère les cartes aléatoirement
+                generateRandomCards(idPartie);
+                gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
                 response.json(new CardDAO().getCards(idPartie));
             }
         } catch (SQLException e) {
@@ -203,7 +246,7 @@ public class LobbyController
     /**
      * Traite une requete qui contient l'id du joueur et le code de la partie en paramètre.
      * Renvoie une erreur si le code est invalide, la partie est pleine ou le joueur n'existe pas.
-     * Renvoie la liste des joueurs en cas de succés.
+     * Renvoie la liste des joueurs en cas de succès.
      * @param context
      */
     public static void joinGame(WebServerContext context)
@@ -218,15 +261,51 @@ public class LobbyController
             System.out.println(player.nom());
             
             GameDAO gameDAO = new GameDAO();
+            Game game = gameDAO.getGame(code);
             
-            int id = gameDAO.playerJoin(code, player.nom());
-            response.json(new PlayerDAO().getPlayers(id));
+            if(game == null)
+                throw new JoinException("Code de partie invalide", JoinException.Type.CODE_INVALID);
+            
+            if(game.etat() != EEtatPartie.SELECTION_ROLE)
+                throw new JoinException("La partie à déjà commencé", JoinException.Type.STATE_INVALID);
+
+            PlayerDAO playerDAO = new PlayerDAO();
+
+            if (playerDAO.getPlayers(game.id()).size() >= 2)
+                throw new JoinException("La partie est pleine", JoinException.Type.MAX_PLAYER);
+            
+            int idJoueur = playerDAO.createPlayer(player.nom(), game.id(), EPlayerRole.MAITRE_MOT);
+            response.json(playerDAO.getPlayer(idJoueur));
 
         } catch (SQLException e) {
-            System.out.println(e);
+            e.printStackTrace();
             response.serverError("An error occured");
         } catch (JoinException e) {
             response.serverError(e.getMessage());
+        }
+    }
+
+    public static void getPlayers(WebServerContext context)
+    {
+        WebServerRequest request = context.getRequest();
+        WebServerResponse response = context.getResponse();
+
+        try
+        {
+            int gameId = Integer.valueOf(request.getParam("idPartie"));
+            ArrayList<Player> players = new PlayerDAO().getPlayers(gameId);
+                
+            // Remplace les ID par 0 des joueurs pour la sécurité
+            players.replaceAll((p) -> 
+            {
+                return new Player(0, p.nom(), gameId, p.role());
+            });
+
+            response.json(players);
+
+        }catch (SQLException e) {
+            System.out.println(e);
+            response.serverError("An error occured");
         }
     }
     
@@ -248,5 +327,28 @@ public class LobbyController
                 code += (char) (random.nextInt(26) + 65);
         }
         return code;
+    }
+
+    public static class JoinException extends Exception
+    {
+        public enum Type
+        {
+            MAX_PLAYER,
+            CODE_INVALID,
+            PLAYER_INVALID,
+            STATE_INVALID
+        }
+
+        private Type type;
+
+        public JoinException(String message, Type type) {
+            super(message);
+            this.type=type;
+        }
+
+        public Type getType()
+        {
+            return type;
+        }
     }
 }
