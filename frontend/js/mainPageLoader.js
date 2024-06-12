@@ -25,7 +25,6 @@ async function newGame()
 
     if(game.status==200)
     {
-
         localStorage.setItem("game_data",await game.text());
         let data= localStorage.getItem("game_data")
         let code = JSON.parse(data).code;
@@ -44,7 +43,7 @@ async function loadGame(code)
         await sseClient.connect();
         console.log("connecte au sse client")*/
         const payload = await load.json()
-        
+
         localStorage.setItem("playerId", payload.id);
         localStorage.setItem("partieId", payload.idPartie);
 

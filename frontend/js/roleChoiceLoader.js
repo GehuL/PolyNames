@@ -15,6 +15,7 @@ async function run()
     //document.getElementById("game_code").innerHTML="Partagez le code de la partie "+gameCode
     const id_partie=JSON.parse(data).id;
 
+    document.getElementById("room_name").innerHTML = "ROOM #" + gameCode;
 }
 
 async function roleSwap(){
@@ -26,10 +27,11 @@ async function roleSwap(){
 
     if(role.status==200){
         let role_payload =await role.json()
-        if(role_payload.length){
+
+        if(role_payload.length > 0){
             if(role_payload[0].role="Maitre des mots"){//syntaxe a verifier
                 document.getElementById("nom_player2").innerHTML=role_payload[0].pseudo
-                document.getElementById("nom_player1").innerHTML=role_payload[1].pseudo            
+                document.getElementById("nom_player1").innerHTML=role_payload[1].pseudo         
             }
             else{
                 document.getElementById("nom_player2").innerHTML=role_payload[1].pseudo
