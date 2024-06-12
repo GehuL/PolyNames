@@ -1,6 +1,7 @@
 window.addEventListener("load",run)
 
-function run(){
+async function run()
+{
     document.getElementById("role_swap").addEventListener("click",()=>{
         roleSwap();
 
@@ -15,8 +16,6 @@ function run(){
     const id_partie=JSON.parse(data).id;
 
 }
-
-
 
 async function roleSwap(){
     //change de role, y a pas de sse pour l'instant donc change pas le role des deux joueurs.

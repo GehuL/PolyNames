@@ -19,10 +19,12 @@ window.addEventListener("load",run)
 
 const baseURI = "http://localhost:5500/"
 
-async function newGame(){
+async function newGame()
+{
     let game =  await fetch("http://localhost:8080/createGame",{method:"put"});
 
-    if(game.status==200){
+    if(game.status==200)
+    {
 
         localStorage.setItem("game_data",await game.text());
         let data= localStorage.getItem("game_data")
@@ -30,19 +32,26 @@ async function newGame(){
         console.log(code)
         loadGame(code)
     }   
-    return null;
 }
 
-async function loadGame(code){
+async function loadGame(code)
+{
     const name={nom:"louis"}
     const load = await fetch("http://localhost:8080/joinGame/"+code,{method:"put",headers: {"Content-Type": "application/json"},body:JSON.stringify(name)})
-    if(load.status==200){
+    if(load.status==200)
+    {
         /*const sseClient =  new sseClient("http://localhost:8080");
         await sseClient.connect();
         console.log("connecte au sse client")*/
-        window.location.href= "/roleChoice.html"
         const payload = await load.json()
-        //localStorage.setItem("playerId", payload.)
+        
+        localStorage.setItem("playerId", payload.id);
+        localStorage.setItem("partieId", payload.idPartie);
+
+        window.location.href= "/roleChoice.html"
+        
+    }else
+    {
+        alert(await load.text());
     }
-    return null;
 }
