@@ -174,6 +174,50 @@ public class LobbyController
                 // Change le statut de la partie et génère les cartes aléatoirement
                 generateRandomCards(idPartie);
                 gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
+                response.json(players);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void startGameRandomly(WebServerContext context)
+    {
+        WebServerRequest request = context.getRequest();
+        WebServerResponse response = context.getResponse();
+
+        try {
+            GameDAO gameDAO = new GameDAO();
+            int idPartie = Integer.valueOf(request.getParam("idPartie"));
+
+            Game game = gameDAO.getGame(idPartie);
+            ArrayList<Player> players = new PlayerDAO().getPlayers(idPartie);
+
+            if(game == null)
+            {
+                response.serverError("Partie introuvable");
+            }else if(game.etat() != EEtatPartie.SELECTION_ROLE)
+            {
+                response.serverError("Partie déjà débuté");
+            }else if(players.size() < 2)
+            {
+                response.serverError("La partie est en attente de joueur");
+            }else
+            {
+                if(new Random().nextBoolean()) // Une chance sur deux d'inverser les roles
+                {
+                    PlayerDAO playerDAO = new PlayerDAO();
+                 
+                    Player player1 = players.get(0);
+                    Player player2 = players.get(1);
+
+                    playerDAO.setRole(player1.id(), player1.role().inverse());
+                    playerDAO.setRole(player2.id(), player1.role());
+                }
+
+                // Change le statut de la partie et génère les cartes aléatoirement
+                generateRandomCards(idPartie);
+                gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
                 response.json(new CardDAO().getCards(idPartie));
             }
         } catch (SQLException e) {
@@ -219,9 +263,18 @@ public class LobbyController
             System.out.println(player.nom());
             
             GameDAO gameDAO = new GameDAO();
+            Game game = gameDAO.getGame(code);
             
-            int id = gameDAO.playerJoin(code, player.nom());
-            response.json(new PlayerDAO().getPlayers(id));
+            if(game == null)
+                throw new JoinException("Code de partie invalide", JoinException.Type.CODE_INVALID);
+            
+            PlayerDAO playerDAO = new PlayerDAO();
+
+            if (playerDAO.getPlayers(game.id()).size() >= 2)
+                throw new JoinException("La partie est pleine", JoinException.Type.MAX_PLAYER);
+            
+            int idJoueur = playerDAO.createPlayer(player.nom(), game.id(), EPlayerRole.MAITRE_MOT);
+            response.json(new PlayerDAO().getPlayer(idJoueur));
 
         } catch (SQLException e) {
             System.out.println(e);
