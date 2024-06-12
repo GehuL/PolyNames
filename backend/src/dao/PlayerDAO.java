@@ -100,13 +100,13 @@ public class PlayerDAO
      */
     public int createPlayer(String nickname, int partieId, EPlayerRole role) throws SQLException
     {
-        PreparedStatement request = bdd.prepareStatement("INSERT INTO joueur (idPartie, nom, role) VALUES (?, ?, 'MAITRE_INTUITION');");
+        PreparedStatement request = bdd.prepareStatement("INSERT INTO joueur (idPartie, nom, role) VALUES (?, ?, ?);");
         request.setInt(1, partieId);
         request.setString(2, nickname);
         request.setString(3, role.toString());
         request.execute();
         
-        PreparedStatement lastRequest = bdd.prepareStatement("SELECT * FROM joueur WHERE id=LAST_INSERTED_ID();");
+        PreparedStatement lastRequest = bdd.prepareStatement("SELECT LAST_INSERT_ID();");
         ResultSet lastResult = lastRequest.executeQuery();
         lastResult.next();
         return lastResult.getInt(1);
@@ -129,7 +129,7 @@ public class PlayerDAO
         request.setString(2, nickname);
         request.execute();
 
-        PreparedStatement lastRequest = bdd.prepareStatement("SELECT * FROM joueur WHERE id=LAST_INSERTED_ID();");
+        PreparedStatement lastRequest = bdd.prepareStatement("SELECT LAST_INSERT_ID();");
         ResultSet lastResult = lastRequest.executeQuery();
         lastResult.next();
         return lastResult.getInt(1);

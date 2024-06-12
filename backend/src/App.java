@@ -18,6 +18,9 @@ public class App {
         webServer.getRouter().post("/guess/:idPartie", GameController::guess);
         webServer.getRouter().post("/clue/:idPartie", GameController::clue);
 
+        // Utilitaires
+        webServer.getRouter().get("/players/:idPartie", LobbyController::getPlayers);
+
         webServer.listen(8080);
     }   
 }

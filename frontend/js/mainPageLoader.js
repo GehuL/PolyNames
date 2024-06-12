@@ -10,7 +10,7 @@ function run(){
         const placeHolderPseudo=document.getElementById("pseudo_placeholder").value
         console.log(placeHolderCode)
         console.log(placeHolderPseudo)
-        //loadGame(placeHolderCode);
+        loadGame(placeHolderCode);
     })
 }
 
@@ -40,7 +40,7 @@ async function loadGame(code){
         /*const sseClient =  new sseClient("http://localhost:8080");
         await sseClient.connect();
         console.log("connecte au sse client")*/
-        window.location.href= "/frontend/roleChoice.html"
+        window.location.href= "/roleChoice.html"
     }
     return null;
 }

@@ -247,7 +247,7 @@ public class LobbyController
     /**
      * Traite une requete qui contient l'id du joueur et le code de la partie en paramètre.
      * Renvoie une erreur si le code est invalide, la partie est pleine ou le joueur n'existe pas.
-     * Renvoie la liste des joueurs en cas de succés.
+     * Renvoie la liste des joueurs en cas de succès.
      * @param context
      */
     public static void joinGame(WebServerContext context)
@@ -276,13 +276,37 @@ public class LobbyController
                 throw new JoinException("La partie est pleine", JoinException.Type.MAX_PLAYER);
             
             int idJoueur = playerDAO.createPlayer(player.nom(), game.id(), EPlayerRole.MAITRE_MOT);
-            response.json(new PlayerDAO().getPlayer(idJoueur));
+            response.json(playerDAO.getPlayer(idJoueur));
 
         } catch (SQLException e) {
-            System.out.println(e);
+            e.printStackTrace();
             response.serverError("An error occured");
         } catch (JoinException e) {
             response.serverError(e.getMessage());
+        }
+    }
+
+    public static void getPlayers(WebServerContext context)
+    {
+        WebServerRequest request = context.getRequest();
+        WebServerResponse response = context.getResponse();
+
+        try
+        {
+            int gameId = Integer.valueOf(request.getParam("idPartie"));
+            ArrayList<Player> players = new PlayerDAO().getPlayers(gameId);
+                
+            // Remplace les ID par 0 des joueurs pour la sécurité
+            players.replaceAll((p) -> 
+            {
+                return new Player(0, p.nom(), gameId, p.role());
+            });
+
+            response.json(players);
+
+        }catch (SQLException e) {
+            System.out.println(e);
+            response.serverError("An error occured");
         }
     }
     
