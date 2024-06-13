@@ -47,7 +47,7 @@ async function loadGame(code)
         localStorage.setItem("playerId", payload.id);
         localStorage.setItem("partieId", payload.idPartie);
 
-        window.location.href= baseURI+"/roleChoice.html"
+        window.location.href= "/roleChoice.html"
     }else
     {
         alert(await load.text());

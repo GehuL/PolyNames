@@ -33,10 +33,12 @@ async function roleSwap(){
     {
         const role_payload =await role.json()
 
+        // Cherche le joueur avec le role maitre intuition
         const p1 = role_payload.filter(e => {return e.role==="MAITRE_INTUITION" })[0];
         if(p1)
             label_intuition.innerHTML = p1.nom ?? "";
 
+        // Cherche le joueur avec le role maitre mots
         const p2 = role_payload.filter(e => {return e.role==="MAITRE_MOT" })[0];
         if(p2)
             label_maitre_mot.innerHTML = p2.nom ?? "";
@@ -50,18 +52,21 @@ async function roleSwap(){
 
 async function start(id){
     const words = await fetch("http://localhost:8080/start/"+id)
-    if(words.status==200){
+    if(words.status==200)
+    {
         localStorage.setItem("word_list",await words.text())
         const body = await words.json()
         
+        const idJoueur = localStorage.getItem("playerId");
+
         const player = body.filter(p => p.id() === idJoueur)[0]
         if(player.role === "MAITRE_INTUITON")
         {
-            window.location.href="/frontend/intuitionMaster.html"
+            window.location.href="/intuitionMaster.html"
         }
         else
         {
-            window.location.href="/frontend/wordsMaster.html"   
+            window.location.href="/wordsMaster.html"   
         }
     }
 }

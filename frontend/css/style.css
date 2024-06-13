@@ -29,7 +29,7 @@ body {
     color: rgb(235, 212, 190);
 }
 
-.menu > button 
+button 
 {
     font-size: larger;
     vertical-align: middle;
@@ -40,25 +40,32 @@ body {
     box-shadow: 0px 8px #00000054;
     width: 300px;
     height: 70px;
+    font-weight: bold;
 }
 
-.menu > button:hover
+button:hover
 {
   background-color: rgb(255, 208, 79);
   color: rgb(61, 40, 12);
 }
 
-.menu > button:active
+button:active
 {
     transition: transform 0.1s;
     transform: scale(0.9);
 }
 
-.menu > input
+input
 {
     margin-top: 10px;
     border-radius: 15px;
     text-align: center;
+}
+
+select
+{
+    border-radius: 15px;
+    box-shadow: 0px 2px #8d8d8d;
 }
 
 img
