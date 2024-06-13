@@ -44,6 +44,7 @@ async function loadGame(code){
         window.location.href= "/frontend/roleChoice.html"
         //console.log(await load.json())
         localStorage.setItem("pseudo",await load.text())
+        localStorage.setItem("game_data");
     }
     return null;
 }
