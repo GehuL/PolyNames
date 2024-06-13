@@ -2,7 +2,6 @@ import { SSEClient } from "./libs/sse-client.js";
 import { ApiService } from "./services/api-service.js";
 import { RoleView } from "./views/role-view.js";
 
-const baseURL = "http://localhost:8080";
 const sseClient = new SSEClient("localhost:8080");
 sseClient.connect();
 
@@ -10,8 +9,6 @@ window.addEventListener("load",run)
 
 async function run()
 {
-    connectSSE();
-
     document.getElementById("role_swap").addEventListener("click", fetchSwap);
 
     document.getElementById("start").addEventListener("click",()=>{
@@ -26,7 +23,6 @@ async function run()
     new RoleView().updateRole(await players.json());
 
     const playerId = JSON.parse(localStorage.getItem("current_player")).id;
-
 
     sseClient.subscribe(playerId, (data) => {onSSEData(data)});
 
@@ -51,10 +47,6 @@ async function fetchSwap()
     }
 }
 
-function connectSSE() {
-  
-}
-
 function onSSEData(data)
 {
     console.log(data);
@@ -74,11 +66,11 @@ function enterGame(role)
 {
     if(role == "MAITRE_INTUITION")
     {
-        window.location.href="/frontend/intuitionMaster.html"
+        window.location.href="intuitionMaster.html"
     }
     else
     {
-        window.location.href="/frontend/wordsMaster.html"   
+        window.location.href="wordsMaster.html"   
     }
 }
 

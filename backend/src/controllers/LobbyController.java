@@ -10,6 +10,7 @@ import dao.DictionnaireDAO;
 import dao.GameDAO;
 import dao.PlayerDAO;
 import models.Card;
+import models.ClientCard;
 import models.ECardColor;
 import models.EEtatPartie;
 import models.EPlayerRole;
@@ -158,7 +159,10 @@ public class LobbyController
             int idPartie = Integer.valueOf(request.getParam("idPartie"));
 
             Game game = gameDAO.getGame(idPartie);
-            ArrayList<Player> players = new PlayerDAO().getPlayers(idPartie);
+
+            PlayerDAO playerDAO = new PlayerDAO();
+
+            ArrayList<Player> players = playerDAO.getPlayers(idPartie);
 
             if(game == null)
             {
@@ -181,9 +185,22 @@ public class LobbyController
                 response.json(game);
 
                 game = gameDAO.getGame(idPartie);
+            
+                ArrayList<ClientCard> cards = new CardDAO().getCards(idPartie);
+                ArrayList<ClientCard> hidden = new ArrayList<>();
+                cards.forEach((card) -> {hidden.add(new ClientCard(card.mot(), ECardColor.UNKNOW));});
+                
                 // Annonce le début de partie
-                for(Player player : players)
-                    context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role()));
+                for(Player player : playerDAO.getPlayers(idPartie))
+                {
+                    if(player.role() == EPlayerRole.MAITRE_INTUITION)
+                    {
+                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), hidden));
+                    }else
+                    {
+                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), cards));
+                    }
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -200,7 +217,9 @@ public class LobbyController
             int idPartie = Integer.valueOf(request.getParam("idPartie"));
 
             Game game = gameDAO.getGame(idPartie);
-            ArrayList<Player> players = new PlayerDAO().getPlayers(idPartie);
+           
+            PlayerDAO playerDAO = new PlayerDAO();
+            ArrayList<Player> players = playerDAO.getPlayers(idPartie);
 
             if(game == null)
             {
@@ -215,8 +234,6 @@ public class LobbyController
             {
                 if(new Random().nextBoolean()) // Une chance sur deux d'inverser les roles
                 {
-                    PlayerDAO playerDAO = new PlayerDAO();
-                 
                     Player player1 = players.get(0);
                     Player player2 = players.get(1);
 
@@ -227,11 +244,23 @@ public class LobbyController
                 // Change le statut de la partie et génère les cartes aléatoirement
                 generateRandomCards(idPartie);
                 gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-                response.json(new CardDAO().getCards(idPartie));
+                response.json(game);
 
+                ArrayList<ClientCard> cards = new CardDAO().getCards(idPartie);
+                ArrayList<ClientCard> hidden = new ArrayList<>();
+                cards.forEach((card) -> {hidden.add(new ClientCard(card.mot(), ECardColor.UNKNOW));});
+                
                 // Annonce le début de partie
-                for(Player player : players)
-                    context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role()));
+                for(Player player : playerDAO.getPlayers(idPartie))
+                {
+                    if(player.role() == EPlayerRole.MAITRE_INTUITION)
+                    {
+                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), hidden));
+                    }else
+                    {
+                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), cards));
+                    }
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

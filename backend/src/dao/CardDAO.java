@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import database.PolynamesDatabase;
 import models.Card;
+import models.ClientCard;
 import models.ECardColor;
 
 public class CardDAO 
@@ -38,20 +39,15 @@ public class CardDAO
      * @return La liste des cartes. Peut être vide si la partie n'existe pas ou qu'il n'y a pas encore de carte.
      * @throws SQLException
      */
-    public ArrayList<Card> getCards(int idPartie) throws SQLException
+    public ArrayList<ClientCard> getCards(int idPartie) throws SQLException
     {
-        PreparedStatement statement = bdd.prepareStatement("SELECT * FROM carte WHERE idPartie=?;");
+        PreparedStatement statement = bdd.prepareStatement("SELECT mot,couleur FROM carte INNER JOIN dictionnaire ON dictionnaire.id=carte.idMot WHERE idPartie=?;");
         statement.setInt(1, idPartie);
         ResultSet result = statement.executeQuery();
-        ArrayList<Card> cards = new ArrayList<>();
+        ArrayList<ClientCard> cards = new ArrayList<>();
         while(result.next())
         {
-            cards.add(new Card(result.getInt("id"), 
-                                    result.getInt("idPartie"), 
-                                    result.getInt("idMot"), 
-                                    result.getBoolean("revelee"),
-                                    ECardColor.valueOf(result.getString("couleur"))));
-            
+            cards.add(new ClientCard(result.getString("dictionnaire.mot"), ECardColor.valueOf(result.getString("couleur"))));
         }
         return cards;
     }

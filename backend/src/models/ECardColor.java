@@ -4,5 +4,6 @@ public enum ECardColor
 {
     BLEU,
     GRIS,
-    NOIR
+    NOIR,
+    UNKNOW,
 }

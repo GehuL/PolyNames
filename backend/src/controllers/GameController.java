@@ -4,13 +4,16 @@ import java.sql.SQLException;
 
 import dao.CardDAO;
 import dao.GameDAO;
+import dao.PlayerDAO;
 import models.Card;
 import models.Clue;
 import models.ECardColor;
 import models.EEtatPartie;
+import models.EPlayerRole;
 import models.Game;
 import models.Guess;
 import models.GuessRound;
+import models.Player;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
 import webserver.WebServerResponse;
@@ -63,10 +66,12 @@ public class GameController
             }
 
             response.ok("Ok");
-            // TODO:: Emetre SSE à l'autre joueur
 
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
+            Player guesser = new PlayerDAO().getPlayer(idPartie, EPlayerRole.MAITRE_INTUITION);
+            context.getSSE().emit(String.valueOf(guesser.id()), clue);
+
+        } catch (SQLException e) 
+        {
             e.printStackTrace();
         }
     }
@@ -150,6 +155,9 @@ public class GameController
 
             Game newState = gameDAO.getGame(idPartie);
             response.json(new GuessRound(newState.etat(), game.score(), game.dejaTrouvee(), card.color(), card.cardId()));
+
+            Player masterWord = new PlayerDAO().getPlayer(idPartie, EPlayerRole.MAITRE_MOT);
+            context.getSSE().emit(String.valueOf(masterWord.id()), guess);
 
         } catch (SQLException e) 
         {

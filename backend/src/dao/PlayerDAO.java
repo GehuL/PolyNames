@@ -55,6 +55,28 @@ public class PlayerDAO
     }
 
     /**
+     * Cherche un joueur dans la BDD en fonction de la partie et du role.
+     * @param nom
+     * @return Renvoie null si le joueur n'existe pas
+     * @throws SQLException 
+     */  
+    public Player getPlayer(int idPartie, EPlayerRole role) throws SQLException
+    {
+        PreparedStatement select = bdd.prepareStatement("SELECT * FROM joueur WHERE idPartie=? AND role=?;");
+        select.setInt(1, idPartie);
+        select.setString(2, role.toString());
+        ResultSet result = select.executeQuery();
+        
+        if(!result.next())
+            return null; 
+
+        return new Player(result.getInt("id"), 
+                result.getString("nom"), 
+                result.getInt("idPartie"), 
+                EPlayerRole.valueOf(result.getString("role")));
+    }
+
+    /**
      * Cherche un joueur dans la BDD avec l'id en paramètre.
      * @param nom
      * @return Renvoie null si le joueur n'existe pas
