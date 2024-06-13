@@ -43,7 +43,6 @@ async function loadGame(code)
         await sseClient.connect();
         console.log("connecte au sse client")*/
         //console.log(await load.json())
-
         const payload = await load.json();
         // Sauvegarde l'id du joueur pour garder une trace et actualiser les infos envoyées par le serveur
         localStorage.setItem("current_player", JSON.stringify(payload));
@@ -51,5 +50,7 @@ async function loadGame(code)
     }else
     {
         alert(await load.text());
+        localStorage.setItem("pseudo",await load.text())
+        localStorage.setItem("game_data");
     }
 }

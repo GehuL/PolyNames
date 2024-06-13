@@ -28,7 +28,6 @@ async function run()
     sseClient.subscribe(playerId, (data) => {onSSEData(data)});
 
     const data=localStorage.getItem("game_data")
-    const gameCode=JSON.parse(data).code
 
     document.getElementById("room_name").innerHTML = "ROOM #" + gameCode;
 }
