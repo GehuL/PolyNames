@@ -99,6 +99,10 @@ public class LobbyController
             else
                 response.json(playersUpdated);
 
+            // Envoie des roles aux joueurs
+            for(Player player : playersUpdated)
+                context.getSSE().emit(String.valueOf(player.id()), playersUpdated);
+
         } catch (SQLException e) {
             e.printStackTrace();
             response.serverError(e.getMessage());
@@ -173,7 +177,11 @@ public class LobbyController
                 // Change le statut de la partie et génère les cartes aléatoirement
                 generateRandomCards(idPartie);
                 gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-                response.json(players);
+                response.json(game);
+
+                // Annonce le début de partie
+                for(Player player : players)
+                    context.getSSE().emit(String.valueOf(player.id()), gameDAO.getGame(game.id()));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -218,6 +226,10 @@ public class LobbyController
                 generateRandomCards(idPartie);
                 gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
                 response.json(new CardDAO().getCards(idPartie));
+
+                // Annonce le début de partie
+                for(Player player : players)
+                    context.getSSE().emit(String.valueOf(player.id()), gameDAO.getGame(game.id()));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -276,7 +288,13 @@ public class LobbyController
                 throw new JoinException("La partie est pleine", JoinException.Type.MAX_PLAYER);
             
             int idJoueur = playerDAO.createPlayer(player.nom(), game.id(), EPlayerRole.MAITRE_MOT);
+            
             response.json(playerDAO.getPlayer(idJoueur));
+            
+            ArrayList<Player> players = playerDAO.getPlayers(game.id());
+
+            for(Player p : players)
+                context.getSSE().emit(String.valueOf(p.id()), players);
 
         } catch (SQLException e) {
             e.printStackTrace();
