@@ -1,12 +1,17 @@
-// aller chercher les mots et les afficher sans les couleurs
-const words = document.getElementsByClassName("intuitionMastersList")
-//boucle for parcourant les 25 mots du json? que la bdd renvoie
-const child=document.createElement("word")
-child.classList()// lui mettre la couleur mais ne pas l'afficher
-words.appenChild(child)
+import { CardsView } from "./views/cards-view.js";
+ 
+function onLoad()
+{
+    const view = new CardsView();
 
-//a voir comment on recupere les mots, si role==intuitionMaster, alors ne pas display les couleurs, sinon les afficher
+    const select_nbr = document.getElementById("nombre_indice");
+    for(let i = 1; i < 10; i++)
+    {
+        const option = document.createElement("option");
+        option.text = i;
+        select_nbr.add(option);
+    }
+}
 
+window.addEventListener("load", onLoad);
 
-
-//deroule de la game 
