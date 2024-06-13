@@ -8,7 +8,11 @@ async function run()
     })
 
     document.getElementById("start").addEventListener("click",()=>{
-        start();
+        start(false);
+    })
+
+    document.getElementById("random").addEventListener("click",()=>{
+        start(true);
     })
 
     const data=localStorage.getItem("game_data")
@@ -55,10 +59,14 @@ async function roleSwap()
     }
 }
 
-async function start()
+async function start(randomly)
 {
     const partieId = JSON.parse(localStorage.getItem("current_player")).idPartie;
-    const response = await fetch("http://localhost:8080/start/"+partieId, {"method": "put"})
+
+    let url = 'http://localhost:8080/start/';
+    if(randomly)
+        url += 'random/';
+    const response = await fetch(url+partieId, {"method": "put"})
 
     if(response.status==200)
     {
