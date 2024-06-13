@@ -16,10 +16,11 @@ async function run()
 
     document.getElementById("room_name").innerHTML = "ROOM #" + gameCode;
 }
+
 // change de role, c'est a dire intervertit les role si il y a deux joueurs, ou change simplement le role si un seul joueur est dans la partie
-async function roleSwap(){
-    //change de role, y a pas de sse pour l'instant donc change pas le role des deux joueurs.
-    const id_partie= localStorage.getItem("partieId");
+async function roleSwap()
+{
+    const id_partie= JSON.parse(localStorage.getItem("current_player")).idPartie;
 
     const role= await fetch("http://localhost:8080/role/swap/"+id_partie,{method:"post"})
 
@@ -42,6 +43,10 @@ async function roleSwap(){
         const p2 = role_payload.filter(e => {return e.role==="MAITRE_MOT" })[0];
         if(p2)
             label_maitre_mot.innerHTML = p2.nom ?? "";
+
+        // Stock les infos du joueur actuelle
+        const idJoueur = JSON.parse(localStorage.getItem("current_player")).id;
+        localStorage.setItem("current_player", JSON.stringify(role_payload.filter(e => {return e.id==idJoueur})[0]));
     }
 
     if(role.status==500)
@@ -50,17 +55,18 @@ async function roleSwap(){
     }
 }
 
-async function start(id){
-    const words = await fetch("http://localhost:8080/start/"+id)
-    if(words.status==200)
-    {
-        localStorage.setItem("word_list",await words.text())
-        const body = await words.json()
-        
-        const idJoueur = localStorage.getItem("playerId");
+async function start()
+{
+    const partieId = JSON.parse(localStorage.getItem("current_player")).idPartie;
+    const response = await fetch("http://localhost:8080/start/"+partieId, {"method": "put"})
 
-        const player = body.filter(p => p.id() === idJoueur)[0]
-        if(player.role === "MAITRE_INTUITON")
+    if(response.status==200)
+    {
+        const body = await response.json()
+        
+        const currentPlayer = JSON.parse(localStorage.getItem("current_player"));
+
+        if(currentPlayer.role === "MAITRE_INTUITON")
         {
             window.location.href="/intuitionMaster.html"
         }
@@ -68,5 +74,8 @@ async function start(id){
         {
             window.location.href="/wordsMaster.html"   
         }
+    }else
+    {
+        alert(await response.text())
     }
 }
