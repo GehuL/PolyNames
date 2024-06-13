@@ -14,7 +14,7 @@ function run(){
 
 window.addEventListener("load",run)
 
-const baseURI = "http://localhost:5500/"
+const baseURI = "http://localhost:5500"
 
 async function newGame()
 {
@@ -41,12 +41,13 @@ async function loadGame(code)
         /*const sseClient =  new sseClient("http://localhost:8080");
         await sseClient.connect();
         console.log("connecte au sse client")*/
-        window.location.href= "/frontend/roleChoice.html"
         //console.log(await load.json())
-        localStorage.setItem("pseudo",await load.text())
-
+        const payload = await load.json();
+        
         localStorage.setItem("playerId", payload.id);
         localStorage.setItem("partieId", payload.idPartie);
+
+        window.location.href= baseURI+"/roleChoice.html"
     }else
     {
         alert(await load.text());

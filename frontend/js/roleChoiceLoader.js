@@ -10,6 +10,7 @@ async function run()
     document.getElementById("start").addEventListener("click",()=>{
         start();
     })
+
     const data=localStorage.getItem("game_data")
     const gameCode=JSON.parse(data).code
 
@@ -18,9 +19,7 @@ async function run()
 // change de role, c'est a dire intervertit les role si il y a deux joueurs, ou change simplement le role si un seul joueur est dans la partie
 async function roleSwap(){
     //change de role, y a pas de sse pour l'instant donc change pas le role des deux joueurs.
-    const data=localStorage.getItem("game_data")
-    const id_partie=JSON.parse(data).id;
-
+    const id_partie= localStorage.getItem("partieId");
 
     const role= await fetch("http://localhost:8080/role/swap/"+id_partie,{method:"post"})
 
@@ -57,12 +56,12 @@ async function start(id){
         
         const player = body.filter(p => p.id() === idJoueur)[0]
         if(player.role === "MAITRE_INTUITON")
-            {
-                window.location.href="/frontend/intuitionMaster.html"
-            }
-            else
-            {
-                window.location.href="/frontend/wordsMaster.html"   
-            }
+        {
+            window.location.href="/frontend/intuitionMaster.html"
+        }
+        else
+        {
+            window.location.href="/frontend/wordsMaster.html"   
+        }
     }
 }
