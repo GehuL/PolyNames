@@ -22,4 +22,11 @@ export class ApiService
 
         return await fetch(url+partieId, {"method": "put"})
     }
+
+    static async getPlayers()
+    {
+        const partieId = JSON.parse(localStorage.getItem("current_player")).idPartie;
+        const url = baseURL + "/players/"+partieId;
+        return await fetch(url, {"method": "get"});
+    }
 }

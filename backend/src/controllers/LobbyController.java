@@ -15,6 +15,7 @@ import models.EEtatPartie;
 import models.EPlayerRole;
 import models.Game;
 import models.Player;
+import models.StartGame;
 import models.Word;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
@@ -179,9 +180,10 @@ public class LobbyController
                 gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
                 response.json(game);
 
+                game = gameDAO.getGame(idPartie);
                 // Annonce le début de partie
                 for(Player player : players)
-                    context.getSSE().emit(String.valueOf(player.id()), gameDAO.getGame(game.id()));
+                    context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role()));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -229,7 +231,7 @@ public class LobbyController
 
                 // Annonce le début de partie
                 for(Player player : players)
-                    context.getSSE().emit(String.valueOf(player.id()), gameDAO.getGame(game.id()));
+                    context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role()));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -284,17 +286,19 @@ public class LobbyController
 
             PlayerDAO playerDAO = new PlayerDAO();
 
-            if (playerDAO.getPlayers(game.id()).size() >= 2)
+            ArrayList<Player> players = playerDAO.getPlayers(game.id());
+            if (players.size() >= 2)
                 throw new JoinException("La partie est pleine", JoinException.Type.MAX_PLAYER);
             
-            int idJoueur = playerDAO.createPlayer(player.nom(), game.id(), EPlayerRole.MAITRE_MOT);
-            
+            EPlayerRole role = EPlayerRole.MAITRE_MOT;
+            if(players.size() == 1)
+                role = players.get(0).role().inverse();
+
+            int idJoueur = playerDAO.createPlayer(player.nom(), game.id(), role);
             response.json(playerDAO.getPlayer(idJoueur));
-            
-            ArrayList<Player> players = playerDAO.getPlayers(game.id());
 
             for(Player p : players)
-                context.getSSE().emit(String.valueOf(p.id()), players);
+                context.getSSE().emit(String.valueOf(p.id()), playerDAO.getPlayers(game.id()));
 
         } catch (SQLException e) {
             e.printStackTrace();

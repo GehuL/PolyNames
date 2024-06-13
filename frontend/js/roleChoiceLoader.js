@@ -22,6 +22,9 @@ async function run()
         start(true);
     })
 
+    const players = await ApiService.getPlayers()
+    new RoleView().updateRole(await players.json());
+
     const playerId = JSON.parse(localStorage.getItem("current_player")).id;
 
 
@@ -54,23 +57,22 @@ function connectSSE() {
 
 function onSSEData(data)
 {
+    console.log(data);
+
     // La partie est lancé, il faut changer de page
-    if(data?.etat === "CHOISIR_INDICE")
+    if(data?.etat == "CHOISIR_INDICE")
     {
-        enterGame();
+        enterGame(data.role);
     }else
     {
         const roleView = new RoleView();
         roleView.updateRole(data);
     }
-
 }
 
-function enterGame()
+function enterGame(role)
 {
-    const currentPlayer = JSON.parse(localStorage.getItem("current_player"));
-
-    if(currentPlayer.role === "MAITRE_INTUITON")
+    if(role == "MAITRE_INTUITION")
     {
         window.location.href="/intuitionMaster.html"
     }
@@ -87,9 +89,10 @@ async function start(randomly)
 {
     const response = await ApiService.startGame(randomly);
 
-    if(response.status==200)
+    if(response.status==200 && response?.etat == "CHOISIR_INDICE")
     {
-        enterGame();       
+        const payload = await response.json();
+        enterGame(payload.role);       
     }else
     {
         alert(await response.text())
