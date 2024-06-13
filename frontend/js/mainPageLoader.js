@@ -43,7 +43,7 @@ async function loadGame(code){
         console.log("connecte au sse client")*/
         window.location.href= "/frontend/roleChoice.html"
         //console.log(await load.json())
-        localStorage.setItem(placeHolderPseudo,await load.text())
+        localStorage.setItem("pseudo",await load.text())
     }
     return null;
 }

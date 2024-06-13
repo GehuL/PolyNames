@@ -16,10 +16,11 @@ function run(){
 }
 
 
-// change de role, c'est a dire intervertir les role si il y a deux joueurs, ou change simplement le role si un seul joueur est dans la partie
+// change de role, c'est a dire intervertit les role si il y a deux joueurs, ou change simplement le role si un seul joueur est dans la partie
 async function roleSwap(){
     const data=localStorage.getItem("game_data")
     const id_partie=JSON.parse(data).id;
+
 
     const role= await fetch("http://localhost:8080/role/swap/"+id_partie,{method:"post"})
 
@@ -47,6 +48,7 @@ async function roleSwap(){
         }
     }
     }
+
     if(role.status==500){
         alert("ca n a pas marche ")
     }   
@@ -58,6 +60,4 @@ async function start(){
     const id_partie=JSON.parse(data).id;
     const players= await fetch("http://localhost:8080/players/"+id_partie)
     console.log(await players.json())
-    const player1=players[0]
-    const player2=players[1]
 }
