@@ -40,3 +40,16 @@
     height: 100%;
     border-radius: 5px;
 }
+
+*[data-color="BLEU"]  {
+    background-color: #54a5db;
+}
+
+*[data-color="GRIS"]  {
+    background-color: #707080;
+}
+
+*[data-color="NOIR"]  {
+    color: #ffffff;
+    background-color: #1d1d22;
+}
