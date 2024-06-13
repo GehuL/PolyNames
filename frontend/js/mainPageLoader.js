@@ -47,7 +47,7 @@ async function loadGame(code)
         // Sauvegarde l'id du joueur pour garder une trace et actualiser les infos envoyées par le serveur
         localStorage.setItem("current_player", JSON.stringify(payload));
         localStorage.setItem("gameCode", code);
-        window.location.href= "/roleChoice.html"
+        window.location.href= "/frontend/roleChoice.html"
     }else
     {
         alert(await load.text());

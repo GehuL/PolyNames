@@ -1,6 +1,6 @@
 import { SSEClient } from "./libs/sse-client.js";
-import { RoleView } from "./views/role-view.js";
 import { ApiService } from "./services/api-service.js";
+import { RoleView } from "./views/role-view.js";
 
 const baseURL = "http://localhost:8080";
 const sseClient = new SSEClient("localhost:8080");
@@ -72,11 +72,11 @@ function enterGame()
 
     if(currentPlayer.role === "MAITRE_INTUITON")
     {
-        window.location.href="/intuitionMaster.html"
+        window.location.href="/frontend/intuitionMaster.html"
     }
     else
     {
-        window.location.href="/wordsMaster.html"   
+        window.location.href="/frontend/wordsMaster.html"   
     }
 }
 
