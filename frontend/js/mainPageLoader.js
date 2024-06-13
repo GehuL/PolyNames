@@ -1,5 +1,3 @@
-
-
 function run(){
     document.getElementById("createGame").addEventListener("click",()=>{
         newGame();
@@ -13,7 +11,6 @@ function run(){
         loadGame(placeHolderCode);
     })
 }
-
 
 window.addEventListener("load",run)
 
@@ -35,20 +32,21 @@ async function newGame()
 
 async function loadGame(code)
 {
-    const name={nom:"louis"}
-    const load = await fetch("http://localhost:8080/joinGame/"+code,{method:"put",headers: {"Content-Type": "application/json"},body:JSON.stringify(name)})
+    const placeHolderPseudo=document.getElementById("pseudo_placeholder").value
+    const name={nom:placeHolderPseudo}
+    const load = await fetch("http://localhost:8080/joinGame/"+code,{method:"put",headers: {"Content-Type": "application/json"},body:JSON.stringify(name)})// load contient l'id du joueur qui a fait la requete 
+    
     if(load.status==200)
     {
         /*const sseClient =  new sseClient("http://localhost:8080");
         await sseClient.connect();
         console.log("connecte au sse client")*/
-        const payload = await load.json()
+        window.location.href= "/frontend/roleChoice.html"
+        //console.log(await load.json())
+        localStorage.setItem("pseudo",await load.text())
 
         localStorage.setItem("playerId", payload.id);
         localStorage.setItem("partieId", payload.idPartie);
-
-        window.location.href= "/roleChoice.html"
-        
     }else
     {
         alert(await load.text());

@@ -8,20 +8,19 @@ async function run()
     })
 
     document.getElementById("start").addEventListener("click",()=>{
-        start(id_partie)
+        start();
     })
     const data=localStorage.getItem("game_data")
     const gameCode=JSON.parse(data).code
-    //document.getElementById("game_code").innerHTML="Partagez le code de la partie "+gameCode
-    const id_partie=JSON.parse(data).id;
 
     document.getElementById("room_name").innerHTML = "ROOM #" + gameCode;
 }
-
+// change de role, c'est a dire intervertit les role si il y a deux joueurs, ou change simplement le role si un seul joueur est dans la partie
 async function roleSwap(){
     //change de role, y a pas de sse pour l'instant donc change pas le role des deux joueurs.
     const data=localStorage.getItem("game_data")
     const id_partie=JSON.parse(data).id;
+
 
     const role= await fetch("http://localhost:8080/role/swap/"+id_partie,{method:"post"})
 
