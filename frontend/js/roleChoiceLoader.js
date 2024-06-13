@@ -25,21 +25,23 @@ async function roleSwap(){
 
     const role= await fetch("http://localhost:8080/role/swap/"+id_partie,{method:"post"})
 
+    const label_intuition = document.getElementById("MAITRE_INTUITION");
+    const label_maitre_mot = document.getElementById("MAITRE_MOT");
+    
+    label_intuition.innerHTML = "";
+    label_maitre_mot.innerHTML = ""; 
+
     if(role.status==200)
     {
-        let role_payload =await role.json()
+        const role_payload =await role.json()
 
-        if(role_payload.length > 0)
-        {
-            const rolep1 = document.getElementById(role_payload[0]?.role);
-            
-            if(rolep1)
-                rolep1.innerHTML="🕵️ " + role_payload[0].nom;
-            
-            const rolep2 = document.getElementById(role_payload[1]?.role);
-            if(rolep2)
-                rolep2.innerHTML= "🕵️ " + role_payload[1].nom;
-        }        
+        const p1 = role_payload.filter(e => {return e.role==="MAITRE_INTUITION" })[0];
+        if(p1)
+            label_intuition.innerHTML = p1.nom ?? "";
+
+        const p2 = role_payload.filter(e => {return e.role==="MAITRE_MOT" })[0];
+        if(p2)
+            label_maitre_mot.innerHTML = p2.nom ?? "";
     }
 
     if(role.status==500)
