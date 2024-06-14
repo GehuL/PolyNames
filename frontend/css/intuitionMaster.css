@@ -1,0 +1,29 @@
+@import "style.css";
+@import "cards.css";
+
+body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    background-color: #1f103d;
+}
+
+.cards
+{
+    margin-bottom: 5%;
+}
+
+
+#score
+{
+    font-weight: bold;
+    color: #d6ba3e;
+    margin-bottom: 2%;
+    font-size: larger;
+}

@@ -1,0 +1,55 @@
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5%;
+    width: 50%;
+}
+
+.card {
+    position: relative;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    aspect-ratio: 18/11;
+    font-size: 30px;
+    width: 100%;
+
+    padding: 10px;
+    box-sizing: border-box;
+    
+    background-color: #ffffff;
+    box-shadow: 5px 5px 2px rgba(0, 0, 0, 0.185);
+    
+    font-weight: bold;
+    
+    border: 5px solid red;;
+    border-radius: 5px;
+    border-color: #e9d062;
+
+    cursor: pointer;
+}
+
+.card.hidden::after {
+    position: absolute;
+    content: " ";
+    background-color: #48468a;
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+}
+
+*[data-color="BLEU"]  {
+    background-color: #54a5db;
+}
+
+*[data-color="GRIS"]  {
+    background-color: #707080;
+}
+
+*[data-color="NOIR"]  {
+    color: #ffffff;
+    background-color: #1d1d22;
+}
