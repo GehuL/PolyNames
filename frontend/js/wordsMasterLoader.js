@@ -1,14 +1,26 @@
 import { SSEClient } from "./libs/sse-client.js";
 import { CardsView } from "./views/cards-view.js";
- 
+import { ApiService} from "./services/api-service.js"
+
 const playerId = JSON.parse(localStorage.getItem("current_player")).id;
+const partieId = JSON.parse(localStorage.getItem("current_player")).idPartie;
+
+const apiService = new ApiService(partieId, playerId)
 const sseClient = new SSEClient("localhost:8080");
+
 sseClient.connect();
 sseClient.subscribe(playerId, (data) => {onSSEData(data)});
-
-function onLoad()
+ 
+async function onLoad()
 {
-    const view = new CardsView();
+    const view = new CardsView();   
+
+    const cards = await apiService.getCards();
+    
+    for(let card of await cards.json())
+    {
+        view.displayCard(card);
+    }
 
     const select_nbr = document.getElementById("nombre_indice");
     for(let i = 1; i < 10; i++)
@@ -44,7 +56,7 @@ async function sendClue()
     const _clue= await fetch("http://localhost:8080/clue/"+id_partie.idPartie,{method:"post",headers: {"Content-Type": "application/json"},body:JSON.stringify(clue,toFind)})
     if(_clue.status==200)
     {
-        console.log(clue)
+       
     }
     else
     {
