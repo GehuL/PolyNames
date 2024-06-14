@@ -171,7 +171,7 @@ public class LobbyController
             generateRandomCards(idPartie);
             gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
 
-            response.ok("OK");
+            response.ok("ok");
 
             final Game newGame = gameDAO.getGame(idPartie);
 
@@ -210,7 +210,10 @@ public class LobbyController
                 
              // Une chance sur deux d'inverser les roles
             if(new Random().nextBoolean())
+            {
+                System.out.println("ROLE SWAP");
                 swapRole(game);
+            }
 
             // Change le statut de la partie et génère les cartes aléatoirement
             generateRandomCards(idPartie);
@@ -304,7 +307,7 @@ public class LobbyController
                 throw new GameException("La partie est pleine", GameException.Type.MAX_PLAYER);
             
             EPlayerRole role = EPlayerRole.MAITRE_MOT;
-            if(players.size() == 1)
+            if(players.size() == 1) // Il y a déjà un joueur on prend son role inverse
                 role = players.get(0).role().inverse();
 
             int idJoueur = playerDAO.createPlayer(player.nom(), game.id(), role);
