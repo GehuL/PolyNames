@@ -34,6 +34,21 @@ public class CardDAO
     }
 
     /**
+     * Compte le nombre de carte qui sont révélées pra le maitre des intuitions.
+     * @param idPartie
+     * @return
+     * @throws SQLException 
+     */
+    public int countCardRevelead(int idPartie) throws SQLException
+    {
+        PreparedStatement statement = bdd.prepareStatement("SELECT COUNT(revelee) FROM carte WHERE idPartie=? AND revelee=TRUE;");
+        statement.setInt(1, idPartie);
+        ResultSet result = statement.executeQuery();
+        result.next();
+        return result.getInt(1);
+    }
+
+    /**
      * Renvoie les cartes associés à une partie.
      * @param idPartie
      * @return La liste des cartes. Peut être vide si la partie n'existe pas ou qu'il n'y a pas encore de carte.

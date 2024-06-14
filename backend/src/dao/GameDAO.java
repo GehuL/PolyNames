@@ -145,4 +145,17 @@ public class GameDAO
         statement.setInt(2, idPartie);
         return statement.executeUpdate() > 0;
     }
+
+    /**
+     * Supprime la partie de la BDD. Elle ne sera plus joignable et les tables enfant liées sont supprimées  
+     * @param idPartie
+     * @return
+     * @throws SQLException
+     */
+    public boolean deleteGame(int idPartie) throws SQLException
+    {
+        PreparedStatement statement = bdd.prepareStatement("DELETE FROM partie WHERE id=?;");
+        statement.setInt(1, idPartie);
+        return statement.executeUpdate() > 0;
+    }
 }

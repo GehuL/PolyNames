@@ -50,6 +50,12 @@ async function guess(idCard)
 
         document.getElementById("score").innerHTML ="SCORE: " + payload.score;
         document.getElementById(payload.idCard).dataset.color = payload.color;
+
+        if(payload.etatPartie == "FIN")
+        {
+            alert("La partie est finie !");
+            window.location.href="/index.html";
+        }
     }
     else
     {

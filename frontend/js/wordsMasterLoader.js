@@ -38,7 +38,11 @@ document.getElementById("btn_valider").addEventListener("click",()=>{
 
 function onSSEData(data)
 {
-    
+    if(data?.etatPartie == "FIN")
+    {
+        alert("La partie est finie !");
+        window.location.href="/index.html";
+    }
 }
 
 async function sendClue()

@@ -150,6 +150,10 @@ public class GameController
                     }
     
                     gameDAO.setScore(idPartie, score);
+                    
+                    // Fin de partie car toutes les cartes sont révélées
+                    if(cardDAO.countCardRevelead(idPartie) >= 25)
+                        gameDAO.setState(idPartie, EEtatPartie.FIN);
                 }
                 break;
                 default:
@@ -166,6 +170,12 @@ public class GameController
             // Envoi du nouvel état de la partie au maitre des mots
             Player masterWord = new PlayerDAO().getPlayer(idPartie, EPlayerRole.MAITRE_MOT);
             context.getSSE().emit(String.valueOf(masterWord.id()), guessRound);
+
+            // On peut supprimer la partie de la BDD
+            if(guessRound.etatPartie() == EEtatPartie.FIN)
+            {
+                gameDAO.deleteGame(idPartie);
+            }
 
         } catch (SQLException e) 
         {
