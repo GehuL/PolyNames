@@ -29,7 +29,7 @@ async function sendClue(){
     let clue=document.getElementById("indice_input").value
     let toFind=document.getElementById("nombre_indice").value
     const id_partie=JSON.parse(localStorage.getItem("current_player"))
-    const _clue= await fetch("http://localhost:8080/clue/"+id_partie.idPartie,{method:"post",headers: {"Content-Type": "application/json"},body:JSON.stringify(clue,toFind)})//il faut ajouter le sse de maniere a ce que le maitre des intuitions voit l'indice apparaitre
+    const _clue= await fetch("http://localhost:8080/clue/"+id_partie.idPartie,{method:"post",headers: {"Content-Type": "application/json"},body:JSON.stringify(clue,toFind)})
     if(_clue.status==200){
         console.log(clue)
     }
