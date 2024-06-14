@@ -10,7 +10,7 @@ const sseClient = new SSEClient("localhost:8080");
 
 async function run()
 {
-    sseClient.connect();
+    await sseClient.connect();
     sseClient.subscribe(playerId, (data) => {onSSEData(data)});
 
     document.getElementById("role_swap").addEventListener("click", fetchSwap);
