@@ -26,6 +26,10 @@ document.getElementById("btn_valider").addEventListener("click",()=>{
 })
 
 async function sendClue(){
+    if(document.getElementById("indice_input").value==""){
+        alert("Indice non valide")
+        return
+    }
     let clue=document.getElementById("indice_input").value
     let toFind=document.getElementById("nombre_indice").value
     const id_partie=JSON.parse(localStorage.getItem("current_player"))

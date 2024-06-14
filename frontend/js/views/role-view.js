@@ -14,12 +14,25 @@ export class RoleView
     
         // Cherche le joueur avec le role maitre intuition
         const p1 = players.filter(e => {return e.role==="MAITRE_INTUITION" })[0];
-        if(p1)
-            label_intuition.innerHTML = p1.nom ?? "";
+        if(p1){
+            if(p1.nom==JSON.parse(localStorage.getItem("current_player")).nom){
+                label_intuition.innerHTML = "(you) "+p1.nom ?? "";
+            }
+            else{
+                label_intuition.innerHTML = p1.nom ?? "";
+            }
+            
+        }
 
         // Cherche le joueur avec le role maitre mots
         const p2 = players.filter(e => {return e.role==="MAITRE_MOT" })[0];
-        if(p2)
-            label_maitre_mot.innerHTML = p2.nom ?? "";
+        if(p2){
+            if(p2.nom==JSON.parse(localStorage.getItem("current_player")).nom){
+            label_maitre_mot.innerHTML = "(you) "+p2.nom ?? "";
+            }
+            else{
+                label_maitre_mot.innerHTML = p2.nom ?? "";
+            }
+        }
     }
 }

@@ -18,6 +18,11 @@ async function run()
     document.getElementById("random").addEventListener("click",()=>{
         start(true);
     })
+    document.getElementById("copy").addEventListener("click",function(){
+        const code = localStorage.getItem("gameCode")
+        console.log(code)
+        navigator.clipboard.writeText(code)
+    })
 
     const players = await ApiService.getPlayers()
     new RoleView().updateRole(await players.json());
