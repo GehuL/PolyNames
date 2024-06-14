@@ -131,7 +131,7 @@ public class GameController
             }else if(card.color() == ECardColor.GRIS) // Tour finie
             {
                 gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-                gameDAO.setDejaTrouvee(idPartie, 0); // Reset le compteur de cartes trouvées ce tour
+                gameDAO.setDejaTrouvee(idPartie, 0); // Reset le compteur des cartes trouvées ce tour
             }else // BLEU
             {
                 int nbrTrouvee = game.dejaTrouvee() + 1;
@@ -151,13 +151,17 @@ public class GameController
 
                 gameDAO.setScore(idPartie, score);
             }
+            
             cardDAO.revealCard(idPartie, card.cardId());
 
             Game newState = gameDAO.getGame(idPartie);
-            response.json(new GuessRound(newState.etat(), game.score(), game.dejaTrouvee(), card.color(), card.cardId()));
+            GuessRound guessRound = new GuessRound(newState.etat(), game.score(), game.dejaTrouvee(), card.color(), card.cardId());
 
+            response.json(guessRound);
+
+            // Envoie du nouvelle état de la partie au maitre des mots
             Player masterWord = new PlayerDAO().getPlayer(idPartie, EPlayerRole.MAITRE_MOT);
-            context.getSSE().emit(String.valueOf(masterWord.id()), guess);
+            context.getSSE().emit(String.valueOf(masterWord.id()), newState);
 
         } catch (SQLException e) 
         {
