@@ -1,5 +1,6 @@
 # Avertissement
 Il est nécessaire de lancer deux instances de visual studio code, l'un dans le dossier backend, l'autre dans le dossier frontend pour que LiveServer est le bon chemin.
+Il faut lancer un navigateur (chrome et edge devrait marcher) et deux onglets dont un en navigation privé.
 
 # Diagramme Entités-Associations 
 
