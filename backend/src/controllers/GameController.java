@@ -163,7 +163,7 @@ public class GameController
 
             response.json(guessRound);
 
-            // Envoie du nouvelle état de la partie au maitre des mots
+            // Envoie du nouvel état de la partie au maitre des mots
             Player masterWord = new PlayerDAO().getPlayer(idPartie, EPlayerRole.MAITRE_MOT);
             context.getSSE().emit(String.valueOf(masterWord.id()), newState);
 
@@ -180,7 +180,35 @@ public class GameController
      */
     public static void getCards(WebServerContext context)
     {
+        WebServerRequest request = context.getRequest();
+        WebServerResponse response = context.getResponse();
 
+        int idPartie = Integer.valueOf(request.getParam("idPartie"));
+        int idJoueur = Integer.valueOf(request.getParam("idJoueur"));
+
+        try 
+        {
+            CardDAO cardDAO = new CardDAO();
+            ArrayList<ClientCard> cards = cardDAO.getCards(idPartie);
+
+            PlayerDAO playerDAO = new PlayerDAO();
+            Player player = playerDAO.getPlayer(idJoueur);
+            
+            if(player == null)
+                throw new GameException("La partie n'existe pas", GameException.Type.CODE_INVALID);
+
+            // Masque la couleur pour le maitre des intuitions 
+            if(player.role() == EPlayerRole.MAITRE_INTUITION)
+                cards.replaceAll((card) -> {return new ClientCard(card.mot(), card.idCard(), ECardColor.UNKNOW);});
+
+            response.json(cards);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (GameException e)
+        {
+            response.serverError(e.getMessage());
+        }
     }
 
     

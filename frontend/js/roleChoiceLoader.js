@@ -2,8 +2,14 @@ import { SSEClient } from "./libs/sse-client.js";
 import { ApiService } from "./services/api-service.js";
 import { RoleView } from "./views/role-view.js";
 
+const playerId = JSON.parse(localStorage.getItem("current_player")).id;
+const partieId = JSON.parse(localStorage.getItem("current_player")).idPartie;
+
+const apiService = new ApiService(partieId, playerId)
 const sseClient = new SSEClient("localhost:8080");
+
 sseClient.connect();
+sseClient.subscribe(playerId, (data) => {onSSEData(data)});
 
 window.addEventListener("load",run)
 
@@ -11,23 +17,14 @@ async function run()
 {
     document.getElementById("role_swap").addEventListener("click", fetchSwap);
 
-    document.getElementById("start").addEventListener("click",()=>{
-        start(false);
-    })
+    document.getElementById("start").addEventListener("click",()=>{ start(false); })
 
-    document.getElementById("random").addEventListener("click",()=>{
-        start(true);
-    })
+    document.getElementById("random").addEventListener("click",()=>{ start(true); })
 
-    const players = await ApiService.getPlayers()
+    const players = await apiService.getPlayers()
     new RoleView().updateRole(await players.json());
 
-    const playerId = JSON.parse(localStorage.getItem("current_player")).id;
-
-    sseClient.subscribe(playerId, (data) => {onSSEData(data)});
-
     const gameCode = localStorage.getItem("gameCode");
-
     document.getElementById("room_name").innerHTML = "ROOM #" + gameCode;
 }
 
@@ -35,7 +32,7 @@ async function run()
 // change de role, c'est a dire intervertit les role si il y a deux joueurs, ou change simplement le role si un seul joueur est dans la partie
 async function fetchSwap()
 {
-    const response = await ApiService.swapRole();
+    const response = await apiService.swapRole();
 
     if(response.status==200)
     {
@@ -79,7 +76,7 @@ function enterGame(role)
  */
 async function start(randomly)
 {
-    const response = await ApiService.startGame(randomly);
+    const response = await apiService.startGame(randomly);
 
     if(response.status==200 && response?.etat == "CHOISIR_INDICE")
     {

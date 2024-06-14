@@ -18,9 +18,6 @@ function onLoad()
 }
 window.addEventListener("load", onLoad);
 
-
-
-
 async function guess(word){
     const id_partie=JSON.parse(localStorage.getItem("current_player"))
     const guess = await fetch("http://localhost:8080/guess/"+id_partie.idPartie,{method:"post",headers: {"Content-Type": "application/json"},body:JSON.stringify(word)})

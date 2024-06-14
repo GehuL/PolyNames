@@ -47,7 +47,5 @@ async function loadGame(code)
     }else
     {
         alert(await load.text());
-        localStorage.setItem("pseudo",await load.text())
-        localStorage.setItem("game_data");
     }
 }
