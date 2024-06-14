@@ -59,6 +59,7 @@ async function sendClue()
     const body = JSON.stringify({"clue":clue, "toFind": toFind});
 
     const _clue= await fetch("http://localhost:8080/clue/"+partieId,{method:"post",headers: {"Content-Type": "application/json"}, body:body})
+    
     if(_clue.status==200)
     {
        

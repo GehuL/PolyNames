@@ -21,7 +21,6 @@ import models.Word;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
 import webserver.WebServerResponse;
-import webserver.WebServerSSE;
 
 /**
  * Traite les requêtes en rapport avec la création d'une partie
@@ -151,8 +150,9 @@ public class LobbyController
 
 
     /**
-     * Débute la partie en générant 25 mots aléatoires
-     * TODO: DOCUMENTATION
+     * Démarre la partie.
+     * Renvoi un JSON {"etat": CHOISIR_INDICE, "role": "MAITRE_MOT"}
+     * et notifie le SSE de l'autre joueur.
      * @param context
      */
     public static void startGame(WebServerContext context)
@@ -191,7 +191,9 @@ public class LobbyController
     }
 
     /**
-     * TODO: DOCUMENTATION
+     * Démarre la partie avec les roles distribués aléatoirement.
+     * Renvoi un JSON {"etat": CHOISIR_INDICE, "role": "MAITRE_MOT"}
+     * et notifie le SSE de l'autre joueur.
      * @param context
      */
     public static void startGameRandomly(WebServerContext context)
