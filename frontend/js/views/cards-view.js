@@ -2,7 +2,7 @@ export class CardsView
 {
     constructor()
     {
-        this.#displayCards()
+
     }
 
     #displayCards(cardslist)

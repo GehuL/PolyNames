@@ -1,7 +1,6 @@
 import { SSEClient } from "./libs/sse-client.js";
 import { CardsView } from "./views/cards-view.js";
  
-
 const playerId = JSON.parse(localStorage.getItem("current_player")).id;
 const sseClient = new SSEClient("localhost:8080");
 sseClient.connect();
@@ -25,19 +24,30 @@ document.getElementById("btn_valider").addEventListener("click",()=>{
     sendClue()
 })
 
-async function sendClue(){
-    if(document.getElementById("indice_input").value==""){
+function onSSEData(data)
+{
+    
+}
+
+async function sendClue()
+{
+    if(document.getElementById("indice_input").value=="")
+    {
         alert("Indice non valide")
         return
     }
+
     let clue=document.getElementById("indice_input").value
     let toFind=document.getElementById("nombre_indice").value
     const id_partie=JSON.parse(localStorage.getItem("current_player"))
+
     const _clue= await fetch("http://localhost:8080/clue/"+id_partie.idPartie,{method:"post",headers: {"Content-Type": "application/json"},body:JSON.stringify(clue,toFind)})
-    if(_clue.status==200){
+    if(_clue.status==200)
+    {
         console.log(clue)
     }
-    else{
+    else
+    {
         alert(_clue.text())
     }
 
