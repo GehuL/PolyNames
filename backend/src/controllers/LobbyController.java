@@ -10,7 +10,6 @@ import dao.DictionnaireDAO;
 import dao.GameDAO;
 import dao.PlayerDAO;
 import models.Card;
-import models.ClientCard;
 import models.ECardColor;
 import models.EEtatPartie;
 import models.EPlayerRole;
@@ -45,10 +44,7 @@ public class LobbyController
             
             response.json(gameDAO.getGame(code));
 
-            context.getSSE().emit(code, "test");
-
             return;
-            
         } catch (SQLException e) 
         {
             e.printStackTrace();

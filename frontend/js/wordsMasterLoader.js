@@ -39,6 +39,11 @@ document.getElementById("btn_valider").addEventListener("click",()=>{
 
 function onSSEData(data)
 {
+    if(data?.score)
+    {
+        document.getElementById("score").innerHTML = "SCORE: " + data.score;
+    }
+
     if(data?.etatPartie == "FIN")
     {
         alert("La partie est finie !");
