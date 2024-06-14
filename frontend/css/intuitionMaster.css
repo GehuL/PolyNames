@@ -14,6 +14,12 @@ body {
     background-color: #1f103d;
 }
 
+.cards
+{
+    margin-bottom: 5%;
+}
+
+
 #score
 {
     font-weight: bold;

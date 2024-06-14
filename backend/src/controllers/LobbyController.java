@@ -10,11 +10,13 @@ import dao.DictionnaireDAO;
 import dao.GameDAO;
 import dao.PlayerDAO;
 import models.Card;
+import models.ClientCard;
 import models.ECardColor;
 import models.EEtatPartie;
 import models.EPlayerRole;
 import models.Game;
 import models.Player;
+import models.StartGame;
 import models.Word;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
@@ -99,6 +101,10 @@ public class LobbyController
             else
                 response.json(playersUpdated);
 
+            // Envoie des roles aux joueurs
+            for(Player player : playersUpdated)
+                context.getSSE().emit(String.valueOf(player.id()), playersUpdated);
+
         } catch (SQLException e) {
             e.printStackTrace();
             response.serverError(e.getMessage());
@@ -153,7 +159,10 @@ public class LobbyController
             int idPartie = Integer.valueOf(request.getParam("idPartie"));
 
             Game game = gameDAO.getGame(idPartie);
-            ArrayList<Player> players = new PlayerDAO().getPlayers(idPartie);
+
+            PlayerDAO playerDAO = new PlayerDAO();
+
+            ArrayList<Player> players = playerDAO.getPlayers(idPartie);
 
             if(game == null)
             {
@@ -173,7 +182,25 @@ public class LobbyController
                 // Change le statut de la partie et génère les cartes aléatoirement
                 generateRandomCards(idPartie);
                 gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-                response.json(players);
+                response.json(game);
+
+                game = gameDAO.getGame(idPartie);
+            
+                ArrayList<ClientCard> cards = new CardDAO().getCards(idPartie);
+                ArrayList<ClientCard> hidden = new ArrayList<>();
+                cards.forEach((card) -> {hidden.add(new ClientCard(card.mot(), ECardColor.UNKNOW));});
+                
+                // Annonce le début de partie
+                for(Player player : playerDAO.getPlayers(idPartie))
+                {
+                    if(player.role() == EPlayerRole.MAITRE_INTUITION)
+                    {
+                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), hidden));
+                    }else
+                    {
+                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), cards));
+                    }
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -190,7 +217,9 @@ public class LobbyController
             int idPartie = Integer.valueOf(request.getParam("idPartie"));
 
             Game game = gameDAO.getGame(idPartie);
-            ArrayList<Player> players = new PlayerDAO().getPlayers(idPartie);
+           
+            PlayerDAO playerDAO = new PlayerDAO();
+            ArrayList<Player> players = playerDAO.getPlayers(idPartie);
 
             if(game == null)
             {
@@ -205,8 +234,6 @@ public class LobbyController
             {
                 if(new Random().nextBoolean()) // Une chance sur deux d'inverser les roles
                 {
-                    PlayerDAO playerDAO = new PlayerDAO();
-                 
                     Player player1 = players.get(0);
                     Player player2 = players.get(1);
 
@@ -217,7 +244,23 @@ public class LobbyController
                 // Change le statut de la partie et génère les cartes aléatoirement
                 generateRandomCards(idPartie);
                 gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-                response.json(new CardDAO().getCards(idPartie));
+                response.json(game);
+
+                ArrayList<ClientCard> cards = new CardDAO().getCards(idPartie);
+                ArrayList<ClientCard> hidden = new ArrayList<>();
+                cards.forEach((card) -> {hidden.add(new ClientCard(card.mot(), ECardColor.UNKNOW));});
+                
+                // Annonce le début de partie
+                for(Player player : playerDAO.getPlayers(idPartie))
+                {
+                    if(player.role() == EPlayerRole.MAITRE_INTUITION)
+                    {
+                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), hidden));
+                    }else
+                    {
+                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), cards));
+                    }
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -272,11 +315,19 @@ public class LobbyController
 
             PlayerDAO playerDAO = new PlayerDAO();
 
-            if (playerDAO.getPlayers(game.id()).size() >= 2)
+            ArrayList<Player> players = playerDAO.getPlayers(game.id());
+            if (players.size() >= 2)
                 throw new JoinException("La partie est pleine", JoinException.Type.MAX_PLAYER);
             
-            int idJoueur = playerDAO.createPlayer(player.nom(), game.id(), EPlayerRole.MAITRE_MOT);
+            EPlayerRole role = EPlayerRole.MAITRE_MOT;
+            if(players.size() == 1)
+                role = players.get(0).role().inverse();
+
+            int idJoueur = playerDAO.createPlayer(player.nom(), game.id(), role);
             response.json(playerDAO.getPlayer(idJoueur));
+
+            for(Player p : players)
+                context.getSSE().emit(String.valueOf(p.id()), playerDAO.getPlayers(game.id()));
 
         } catch (SQLException e) {
             e.printStackTrace();

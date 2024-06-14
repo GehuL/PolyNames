@@ -1,72 +1,92 @@
+import { SSEClient } from "./libs/sse-client.js";
+import { ApiService } from "./services/api-service.js";
+import { RoleView } from "./views/role-view.js";
+
+const sseClient = new SSEClient("localhost:8080");
+sseClient.connect();
+
 window.addEventListener("load",run)
 
 async function run()
 {
-    document.getElementById("role_swap").addEventListener("click",()=>{
-        roleSwap();
-
-    })
+    document.getElementById("role_swap").addEventListener("click", fetchSwap);
 
     document.getElementById("start").addEventListener("click",()=>{
-        start();
+        start(false);
     })
 
-    const data=localStorage.getItem("game_data")
-    const gameCode=JSON.parse(data).code
+    document.getElementById("random").addEventListener("click",()=>{
+        start(true);
+    })
+
+    const players = await ApiService.getPlayers()
+    new RoleView().updateRole(await players.json());
+
+    const playerId = JSON.parse(localStorage.getItem("current_player")).id;
+
+    sseClient.subscribe(playerId, (data) => {onSSEData(data)});
+
+    const gameCode = localStorage.getItem("gameCode");
 
     document.getElementById("room_name").innerHTML = "ROOM #" + gameCode;
 }
+
+
 // change de role, c'est a dire intervertit les role si il y a deux joueurs, ou change simplement le role si un seul joueur est dans la partie
-async function roleSwap(){
-    //change de role, y a pas de sse pour l'instant donc change pas le role des deux joueurs.
-    const id_partie= localStorage.getItem("partieId");
+async function fetchSwap()
+{
+    const response = await ApiService.swapRole();
 
-    const role= await fetch("http://localhost:8080/role/swap/"+id_partie,{method:"post"})
-
-    const label_intuition = document.getElementById("MAITRE_INTUITION");
-    const label_maitre_mot = document.getElementById("MAITRE_MOT");
-    
-    label_intuition.innerHTML = "";
-    label_maitre_mot.innerHTML = ""; 
-
-    if(role.status==200)
+    if(response.status==200)
     {
-        const role_payload =await role.json()
-
-        // Cherche le joueur avec le role maitre intuition
-        const p1 = role_payload.filter(e => {return e.role==="MAITRE_INTUITION" })[0];
-        if(p1)
-            label_intuition.innerHTML = p1.nom ?? "";
-
-        // Cherche le joueur avec le role maitre mots
-        const p2 = role_payload.filter(e => {return e.role==="MAITRE_MOT" })[0];
-        if(p2)
-            label_maitre_mot.innerHTML = p2.nom ?? "";
-    }
-
-    if(role.status==500)
+        const players = await response.json();
+        new RoleView().updateRole(players);
+    }else
     {
-        alert(await role.text())
+        alert(await response.text())
     }
 }
 
-async function start(id){
-    const words = await fetch("http://localhost:8080/start/"+id)
-    if(words.status==200)
-    {
-        localStorage.setItem("word_list",await words.text())
-        const body = await words.json()
-        
-        const idJoueur = localStorage.getItem("playerId");
+function onSSEData(data)
+{
+    console.log(data);
 
-        const player = body.filter(p => p.id() === idJoueur)[0]
-        if(player.role === "MAITRE_INTUITON")
-        {
-            window.location.href="/intuitionMaster.html"
-        }
-        else
-        {
-            window.location.href="/wordsMaster.html"   
-        }
+    // La partie est lancé, il faut changer de page
+    if(data?.etat == "CHOISIR_INDICE")
+    {
+        enterGame(data.role);
+    }else
+    {
+        const roleView = new RoleView();
+        roleView.updateRole(data);
+    }
+}
+
+function enterGame(role)
+{
+    if(role == "MAITRE_INTUITION")
+    {
+        window.location.href="intuitionMaster.html"
+    }
+    else
+    {
+        window.location.href="wordsMaster.html"   
+    }
+}
+
+/** Commence la partie et change de page
+ * @param {*} randomly Indique si il faut démarrer la partie avec les roles aléatoires
+ */
+async function start(randomly)
+{
+    const response = await ApiService.startGame(randomly);
+
+    if(response.status==200 && response?.etat == "CHOISIR_INDICE")
+    {
+        const payload = await response.json();
+        enterGame(payload.role);       
+    }else
+    {
+        alert(await response.text())
     }
 }

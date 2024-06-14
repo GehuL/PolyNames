@@ -9,7 +9,7 @@ export class CardsView
     {
         const cards = document.getElementsByClassName("cards")[0];
 
-        for(let i = 0; i < 25; i++)
+        for(let i = 0; i < 25; i++)//enlever la boucle quand on fera le traitement pour recuperer les cartes depuis le serveur
         {
             const card = document.createElement("div");
             card.setAttribute("id", 1);
@@ -19,4 +19,6 @@ export class CardsView
             cards.appendChild(card);
         }
     }
+    
 }
+

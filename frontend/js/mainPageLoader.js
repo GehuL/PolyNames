@@ -2,6 +2,7 @@ function run(){
     document.getElementById("createGame").addEventListener("click",()=>{
         newGame();
     })
+    
     document.getElementById("joinGame").addEventListener("click",()=>{
         
         const placeHolderCode=document.getElementById("code_placeholder").value
@@ -43,13 +44,14 @@ async function loadGame(code)
         console.log("connecte au sse client")*/
         //console.log(await load.json())
         const payload = await load.json();
-        
-        localStorage.setItem("playerId", payload.id);
-        localStorage.setItem("partieId", payload.idPartie);
-
-        window.location.href= "/roleChoice.html"
+        // Sauvegarde l'id du joueur pour garder une trace et actualiser les infos envoyées par le serveur
+        localStorage.setItem("current_player", JSON.stringify(payload));
+        localStorage.setItem("gameCode", code);
+        window.location.href= "roleChoice.html"
     }else
     {
         alert(await load.text());
+        localStorage.setItem("pseudo",await load.text())
+        localStorage.setItem("game_data");
     }
 }
