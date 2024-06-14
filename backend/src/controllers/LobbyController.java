@@ -21,6 +21,7 @@ import models.Word;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
 import webserver.WebServerResponse;
+import webserver.WebServerSSE;
 
 /**
  * Traite les requêtes en rapport avec la création d'une partie
@@ -37,26 +38,30 @@ public class LobbyController
         try 
         {
             String code = createUniqueCode();
-            if(code != null)
-            {
-                GameDAO gameDAO = new GameDAO();
-                gameDAO.createGame(code);
-                
-                response.json(gameDAO.getGame(code));
+            if(code == null)
+                throw new GameException("Impossible de créer une partie, le serveur est plein", GameException.Type.CODE_INVALID);
 
-                context.getSSE().emit(code, "test");
+            GameDAO gameDAO = new GameDAO();
+            gameDAO.createGame(code);
+            
+            response.json(gameDAO.getGame(code));
 
-                return;
-            }
+            context.getSSE().emit(code, "test");
+
+            return;
+            
         } catch (SQLException e) 
         {
-            System.out.println(e);
+            e.printStackTrace();
+            response.serverError("SQL error");
+        } catch (GameException e) {
+            response.serverError(e.getMessage());
+            e.printStackTrace();
         }
-        response.serverError("An error occured");
     }
 
     /**
-     * Cherche un code unique parmis toutes les parties actuelles
+     * Cherche un code unique parmi toutes les parties actuelles
      * @return Le code ou null si aucun code ne peut être utiliser
      */
     private static String createUniqueCode()
@@ -94,12 +99,12 @@ public class LobbyController
 
         try {
             int idPartie = Integer.valueOf(request.getParam("idPartie"));
-            ArrayList<Player> playersUpdated = swapRole(idPartie);
+            ArrayList<Player> playersUpdated = swapRole(new GameDAO().getGame(idPartie));
             
             if(playersUpdated.size() == 0)
-                response.serverError("Erreur lors du changement de role");
-            else
-                response.json(playersUpdated);
+                throw new GameException("Erreur lors du changement de role", GameException.Type.CODE_INVALID);
+
+            response.json(playersUpdated);
 
             // Envoie des roles aux joueurs
             for(Player player : playersUpdated)
@@ -107,6 +112,8 @@ public class LobbyController
 
         } catch (SQLException e) {
             e.printStackTrace();
+            response.serverError("SQL error");
+        } catch (GameException e) {
             response.serverError(e.getMessage());
         }
     }
@@ -118,14 +125,10 @@ public class LobbyController
      * @throws SQLException
      */
 
-    private static ArrayList<Player> swapRole(int idPartie) throws SQLException
+    private static ArrayList<Player> swapRole(Game game) throws SQLException
     {
         PlayerDAO playerDAO = new PlayerDAO();
-        GameDAO gameDAO = new GameDAO();
-
-        Game game = gameDAO.getGame(idPartie);
-
-        ArrayList<Player> players = playerDAO.getPlayers(idPartie);
+        ArrayList<Player> players = playerDAO.getPlayers(game.id());
 
         // Partie n'existe pas ou déjà débuté ou pas de joueur
         if(game == null || game.etat() != EEtatPartie.SELECTION_ROLE || players.size() == 0) 
@@ -145,8 +148,11 @@ public class LobbyController
         return playerDAO.getPlayers(game.id());
     }
 
+
+
     /**
      * Débute la partie en générant 25 mots aléatoires
+     * TODO: DOCUMENTATION
      * @param context
      */
     public static void startGame(WebServerContext context)
@@ -163,50 +169,31 @@ public class LobbyController
             PlayerDAO playerDAO = new PlayerDAO();
 
             ArrayList<Player> players = playerDAO.getPlayers(idPartie);
-
-            if(game == null)
-            {
-                response.serverError("Partie introuvable");
-            }else if(game.etat() != EEtatPartie.SELECTION_ROLE)
-            {
-                response.serverError("Partie déjà débuté");
-                // TODO: SSE EVENT
-            }else if(players.size() < 2)
-            {
-                response.serverError("La partie est en attente de joueur");
-            }else if(players.get(0).role().equals(players.get(1).role())) // Les deux roles sont identiques
-            {
-                response.serverError("Les roles doivent être différents");
-            }else
-            {
-                // Change le statut de la partie et génère les cartes aléatoirement
-                generateRandomCards(idPartie);
-                gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-                response.json(game);
-
-                game = gameDAO.getGame(idPartie);
+            checkStartGame(game, players);
             
-                ArrayList<ClientCard> cards = new CardDAO().getCards(idPartie);
-                ArrayList<ClientCard> hidden = new ArrayList<>();
-                cards.forEach((card) -> {hidden.add(new ClientCard(card.mot(), ECardColor.UNKNOW));});
-                
-                // Annonce le début de partie
-                for(Player player : playerDAO.getPlayers(idPartie))
-                {
-                    if(player.role() == EPlayerRole.MAITRE_INTUITION)
-                    {
-                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), hidden));
-                    }else
-                    {
-                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), cards));
-                    }
-                }
-            }
-        } catch (SQLException e) {
+            // Change le statut de la partie et génère les cartes aléatoirement
+            generateRandomCards(idPartie);
+            gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
+
+            response.ok("OK");
+
+            final Game newGame = gameDAO.getGame(idPartie);
+
+            players.forEach((p) -> context.getSSE().emit(String.valueOf(p.id()), new StartGame(newGame.etat(), p.role())));
+
+        } catch (SQLException e) 
+        {
             e.printStackTrace();
+        } catch (GameException e) 
+        {
+            response.serverError(e.getMessage());
         }
     }
 
+    /**
+     * TODO: DOCUMENTATION
+     * @param context
+     */
     public static void startGameRandomly(WebServerContext context)
     {
         WebServerRequest request = context.getRequest();
@@ -221,52 +208,51 @@ public class LobbyController
             PlayerDAO playerDAO = new PlayerDAO();
             ArrayList<Player> players = playerDAO.getPlayers(idPartie);
 
-            if(game == null)
-            {
-                response.serverError("Partie introuvable");
-            }else if(game.etat() != EEtatPartie.SELECTION_ROLE)
-            {
-                response.serverError("Partie déjà débuté");
-            }else if(players.size() < 2)
-            {
-                response.serverError("La partie est en attente de joueur");
-            }else
-            {
-                if(new Random().nextBoolean()) // Une chance sur deux d'inverser les roles
-                {
-                    Player player1 = players.get(0);
-                    Player player2 = players.get(1);
-
-                    playerDAO.setRole(player1.id(), player1.role().inverse());
-                    playerDAO.setRole(player2.id(), player1.role());
-                }
-
-                // Change le statut de la partie et génère les cartes aléatoirement
-                generateRandomCards(idPartie);
-                gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-                response.json(game);
-
-                ArrayList<ClientCard> cards = new CardDAO().getCards(idPartie);
-                ArrayList<ClientCard> hidden = new ArrayList<>();
-                cards.forEach((card) -> {hidden.add(new ClientCard(card.mot(), ECardColor.UNKNOW));});
+            checkStartGame(game, players);
                 
-                // Annonce le début de partie
-                for(Player player : playerDAO.getPlayers(idPartie))
-                {
-                    if(player.role() == EPlayerRole.MAITRE_INTUITION)
-                    {
-                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), hidden));
-                    }else
-                    {
-                        context.getSSE().emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), cards));
-                    }
-                }
-            }
+             // Une chance sur deux d'inverser les roles
+            if(new Random().nextBoolean())
+                swapRole(game);
+
+            // Change le statut de la partie et génère les cartes aléatoirement
+            generateRandomCards(idPartie);
+            gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
+            
+            response.ok("OK");
+
+            final Game newGame = gameDAO.getGame(idPartie);
+
+            players.forEach((p) -> context.getSSE().emit(String.valueOf(p.id()), new StartGame(newGame.etat(), p.role())));
+
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (GameException e) {
+            response.serverError(e.getMessage());
         }
     }
 
+    /**
+     * Lève une exception si les conditions pour lancer une partie ne sont pas valides.
+     * 
+     * @param game
+     * @param players
+     * @throws GameException Une erreur si la partie est null, l'état de la partie n'est pas EEtatPartie.SELECTION_ROLE, il manque une joueur.
+     */
+    private static void checkStartGame(Game game, ArrayList<Player> players) throws GameException
+    {
+        if(game == null)
+        {
+            throw new GameException("Partie introuvable", GameException.Type.CODE_INVALID);
+        }else if(game.etat() != EEtatPartie.SELECTION_ROLE)
+        {
+            throw new GameException("Partie déjà débuté", GameException.Type.STATE_INVALID);
+        }else if(players.size() < 2)
+        {
+            throw new GameException("La partie est en attente de joueur", GameException.Type.STATE_INVALID);
+        }
+    }
+
+    // Génère 8 cartes bleues, 15 grises et 2 noires aléatoirement dans la BDD
     private static void generateRandomCards(int idPartie) throws SQLException
     {
         // Génère 25 couleurs et les mets dans le désordre
@@ -308,31 +294,36 @@ public class LobbyController
             Game game = gameDAO.getGame(code);
             
             if(game == null)
-                throw new JoinException("Code de partie invalide", JoinException.Type.CODE_INVALID);
+                throw new GameException("Code de partie invalide", GameException.Type.CODE_INVALID);
             
             if(game.etat() != EEtatPartie.SELECTION_ROLE)
-                throw new JoinException("La partie à déjà commencé", JoinException.Type.STATE_INVALID);
+                throw new GameException("La partie à déjà commencé", GameException.Type.STATE_INVALID);
 
             PlayerDAO playerDAO = new PlayerDAO();
 
             ArrayList<Player> players = playerDAO.getPlayers(game.id());
             if (players.size() >= 2)
-                throw new JoinException("La partie est pleine", JoinException.Type.MAX_PLAYER);
+                throw new GameException("La partie est pleine", GameException.Type.MAX_PLAYER);
             
             EPlayerRole role = EPlayerRole.MAITRE_MOT;
             if(players.size() == 1)
                 role = players.get(0).role().inverse();
 
             int idJoueur = playerDAO.createPlayer(player.nom(), game.id(), role);
-            response.json(playerDAO.getPlayer(idJoueur));
+            // Renvoie le joueur créé avec son ID qui doit être conservé dans le navigateur
+            response.json(playerDAO.getPlayer(idJoueur)); 
+
+            players = playerDAO.getPlayers(game.id());
 
             for(Player p : players)
-                context.getSSE().emit(String.valueOf(p.id()), playerDAO.getPlayers(game.id()));
+            {
+                context.getSSE().emit(String.valueOf(p.id()), players);
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
             response.serverError("An error occured");
-        } catch (JoinException e) {
+        } catch (GameException e) {
             response.serverError(e.getMessage());
         }
     }
@@ -357,7 +348,7 @@ public class LobbyController
 
         }catch (SQLException e) {
             System.out.println(e);
-            response.serverError("An error occured");
+            response.serverError("SQL error");
         }
     }
     
@@ -381,26 +372,5 @@ public class LobbyController
         return code;
     }
 
-    public static class JoinException extends Exception
-    {
-        public enum Type
-        {
-            MAX_PLAYER,
-            CODE_INVALID,
-            PLAYER_INVALID,
-            STATE_INVALID
-        }
 
-        private Type type;
-
-        public JoinException(String message, Type type) {
-            super(message);
-            this.type=type;
-        }
-
-        public Type getType()
-        {
-            return type;
-        }
-    }
 }

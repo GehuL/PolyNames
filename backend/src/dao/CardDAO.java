@@ -41,13 +41,15 @@ public class CardDAO
      */
     public ArrayList<ClientCard> getCards(int idPartie) throws SQLException
     {
-        PreparedStatement statement = bdd.prepareStatement("SELECT mot,couleur FROM carte INNER JOIN dictionnaire ON dictionnaire.id=carte.idMot WHERE idPartie=?;");
+        PreparedStatement statement = bdd.prepareStatement("SELECT mot,couleur,carte.id FROM carte INNER JOIN dictionnaire ON dictionnaire.id=carte.idMot WHERE idPartie=?;");
         statement.setInt(1, idPartie);
         ResultSet result = statement.executeQuery();
         ArrayList<ClientCard> cards = new ArrayList<>();
         while(result.next())
         {
-            cards.add(new ClientCard(result.getString("dictionnaire.mot"), ECardColor.valueOf(result.getString("couleur"))));
+            cards.add(new ClientCard(result.getString("dictionnaire.mot"), 
+                                     result.getInt("id"),
+                                     ECardColor.valueOf(result.getString("couleur"))));
         }
         return cards;
     }
