@@ -19,8 +19,16 @@ body {
     margin-bottom: 5%;
 }
 
+
 #score
 {
+    font-weight: bold;
+    color: #d6ba3e;
+    margin-bottom: 2%;
+    font-size: larger;
+}
+
+#indice{
     font-weight: bold;
     color: #d6ba3e;
     margin-bottom: 2%;
