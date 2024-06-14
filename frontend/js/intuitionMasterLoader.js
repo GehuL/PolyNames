@@ -35,7 +35,8 @@ function onSSEData(data)
 {
     if(data?.clue)
     {
-
+        document.getElementById("indice").innerHTML = data.clue;
+        document.getElementById("nombre_deviner").innerHTML = data.toFind;
     }
 }
 
