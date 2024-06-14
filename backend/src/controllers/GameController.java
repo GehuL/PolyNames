@@ -124,6 +124,7 @@ public class GameController
             switch(card.color())
             {
                 case NOIR:  // Partie finie
+                    gameDAO.setScore(idPartie, 0);
                     gameDAO.setState(idPartie, EEtatPartie.FIN);
                     gameDAO.setDejaTrouvee(idPartie, 0);
                 break;
@@ -151,8 +152,7 @@ public class GameController
     
                     gameDAO.setScore(idPartie, score);
                     
-                    // Fin de partie car toutes les cartes sont révélées
-                    if(cardDAO.countCardRevelead(idPartie) >= 25)
+                    if(cardDAO.countCardRevelead(idPartie, ECardColor.BLEU) >= 8)
                         gameDAO.setState(idPartie, EEtatPartie.FIN);
                 }
                 break;

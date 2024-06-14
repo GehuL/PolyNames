@@ -39,14 +39,16 @@ public class CardDAO
      * @return
      * @throws SQLException 
      */
-    public int countCardRevelead(int idPartie) throws SQLException
+    public int countCardRevelead(int idPartie, ECardColor color) throws SQLException
     {
-        PreparedStatement statement = bdd.prepareStatement("SELECT COUNT(revelee) FROM carte WHERE idPartie=? AND revelee=TRUE;");
+        PreparedStatement statement = bdd.prepareStatement("SELECT COUNT(revelee) FROM carte WHERE idPartie=? AND revelee=TRUE AND couleur=?;");
         statement.setInt(1, idPartie);
+        statement.setString(2, color.toString());
         ResultSet result = statement.executeQuery();
         result.next();
         return result.getInt(1);
     }
+
 
     /**
      * Renvoie les cartes associés à une partie.
