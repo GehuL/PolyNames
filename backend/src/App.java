@@ -22,6 +22,7 @@ public class App {
         webServer.getRouter().get("/players/:idPartie", LobbyController::getPlayers);
         webServer.getRouter().get("/cards/:idPartie/:idJoueur", GameController::getCards);
 
+
         webServer.listen(8080);
     }   
 }

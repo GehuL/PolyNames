@@ -20,7 +20,7 @@ export class ApiService
     {
         let url = baseURL + "/start/";
        
-        if(randomly)
+        if(randomly == true)
             url += 'random/';
 
         return await fetch(url+this.partieId, {"method": "put"})

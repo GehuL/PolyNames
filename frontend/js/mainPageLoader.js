@@ -19,10 +19,13 @@ window.addEventListener("load",run)
 const baseURI = "http://localhost:5500"
 
 async function newGame()
-{   if(document.getElementById("pseudo_placeholder").value==""){
-    alert("Pseudo non valide")
-    return
-}
+{   
+    if(document.getElementById("pseudo_placeholder").value=="")
+    {
+        alert("Pseudo non valide")
+         return;
+    }
+
     let game =  await fetch("http://localhost:8080/createGame",{method:"put"});
 
     if(game.status==200)
@@ -36,7 +39,9 @@ async function newGame()
 }
 
 async function loadGame(code)
-{   if(document.getElementById("pseudo_placeholder").value==""){
+{   
+    if(document.getElementById("pseudo_placeholder").value=="")
+    {
         alert("Pseudo non valide")
         return
     }

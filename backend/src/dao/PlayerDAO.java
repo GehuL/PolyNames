@@ -32,10 +32,12 @@ public class PlayerDAO
         ResultSet result = request.executeQuery();
         ArrayList<Player> players = new ArrayList<>();
         while(result.next())
+        {
             players.add(new Player(result.getInt("id"), 
-                    result.getString("nom"), 
-                    result.getInt("idPartie"), 
-                    EPlayerRole.valueOf(result.getString("role"))));
+                        result.getString("nom"), 
+                        result.getInt("idPartie"), 
+                        EPlayerRole.valueOf(result.getString("role"))));
+        }
         return players;
     }
 
