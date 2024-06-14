@@ -39,10 +39,6 @@ async function loadGame(code)
     
     if(load.status==200)
     {
-        /*const sseClient =  new sseClient("http://localhost:8080");
-        await sseClient.connect();
-        console.log("connecte au sse client")*/
-        //console.log(await load.json())
         const payload = await load.json();
         // Sauvegarde l'id du joueur pour garder une trace et actualiser les infos envoyées par le serveur
         localStorage.setItem("current_player", JSON.stringify(payload));

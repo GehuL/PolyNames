@@ -1,11 +1,13 @@
 package controllers;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import dao.CardDAO;
 import dao.GameDAO;
 import dao.PlayerDAO;
 import models.Card;
+import models.ClientCard;
 import models.Clue;
 import models.ECardColor;
 import models.EEtatPartie;
@@ -14,9 +16,11 @@ import models.Game;
 import models.Guess;
 import models.GuessRound;
 import models.Player;
+import models.StartGame;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
 import webserver.WebServerResponse;
+import webserver.WebServerSSE;
 
 /**
  * Traite les requêtes en rapport avec le déroulement d'une partie
@@ -166,6 +170,49 @@ public class GameController
         } catch (SQLException e) 
         {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Renvoie les cartes de la partie
+     * La route prend en paramètre l'ID de la partie et l'ID du joueur uniquement connu par le client.
+     * @param context
+     */
+    public static void getCards(WebServerContext context)
+    {
+
+    }
+
+    
+    /**
+     * Envoie la liste des cartes aux joueurs de la partie en masquant la couleur pour le maitre des intuitions.
+     * @param sse
+     * @param players La liste des joueurs
+     * @param game La partie 
+     * @throws SQLException
+     */
+    private static void sendCardsToPlayers(WebServerSSE sse, ArrayList<Player> players, Game game) throws SQLException
+    {
+        if(players.size() == 0)
+            return;  
+
+        PlayerDAO playerDAO = new PlayerDAO();
+
+        ArrayList<ClientCard> cards = new CardDAO().getCards(game.id());
+        ArrayList<ClientCard> hidden = new ArrayList<>();
+
+        cards.forEach((card) -> {hidden.add(new ClientCard(card.mot(), card.idCard(), ECardColor.UNKNOW));});
+        
+        // Annonce le début de partie
+        for(Player player : playerDAO.getPlayers(game.id()))
+        {
+            if(player.role() == EPlayerRole.MAITRE_INTUITION)
+            {
+                sse.emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), hidden));
+            }else
+            {
+                sse.emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), cards));
+            }
         }
     }
 }

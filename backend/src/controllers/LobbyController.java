@@ -176,8 +176,6 @@ public class LobbyController
             gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
             response.json(game);
 
-            sendCardsToPlayers(context.getSSE(), playerDAO.getPlayers(idPartie), gameDAO.getGame(idPartie));
-        
         } catch (SQLException e) 
         {
             e.printStackTrace();
@@ -216,9 +214,6 @@ public class LobbyController
             gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
             response.json(game);
 
-            // Envoie les cartes aux deux joueurs (la couleur est masqué pour le maitre des intuitions)
-            sendCardsToPlayers(context.getSSE(), playerDAO.getPlayers(idPartie), gameDAO.getGame(idPartie));
-
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (GameException e) {
@@ -247,38 +242,7 @@ public class LobbyController
         }
     }
 
-    /**
-     * Envoie la liste des cartes aux joueurs de la partie en masquant la couleur pour le maitre des intuitions.
-     * @param sse
-     * @param players La liste des joueurs
-     * @param game La partie 
-     * @throws SQLException
-     */
-    private static void sendCardsToPlayers(WebServerSSE sse, ArrayList<Player> players, Game game) throws SQLException
-    {
-        if(players.size() == 0)
-            return;  
-
-        PlayerDAO playerDAO = new PlayerDAO();
-
-        ArrayList<ClientCard> cards = new CardDAO().getCards(game.id());
-        ArrayList<ClientCard> hidden = new ArrayList<>();
-
-        cards.forEach((card) -> {hidden.add(new ClientCard(card.mot(), card.idCard(), ECardColor.UNKNOW));});
-        
-        // Annonce le début de partie
-        for(Player player : playerDAO.getPlayers(game.id()))
-        {
-            if(player.role() == EPlayerRole.MAITRE_INTUITION)
-            {
-                sse.emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), hidden));
-            }else
-            {
-                sse.emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), cards));
-            }
-        }
-    }
-
+    // Génère 8 cartes bleues, 15 grises et 2 noires aléatoirement dans la BDD
     private static void generateRandomCards(int idPartie) throws SQLException
     {
         // Génère 25 couleurs et les mets dans le désordre
@@ -336,10 +300,15 @@ public class LobbyController
                 role = players.get(0).role().inverse();
 
             int idJoueur = playerDAO.createPlayer(player.nom(), game.id(), role);
-            response.json(playerDAO.getPlayer(idJoueur));
+            // Renvoie le joueur créé avec son ID qui doit être conservé dans le navigateur
+            response.json(playerDAO.getPlayer(idJoueur)); 
+
+            players = playerDAO.getPlayers(game.id());
 
             for(Player p : players)
-                context.getSSE().emit(String.valueOf(p.id()), playerDAO.getPlayers(game.id()));
+            {
+                context.getSSE().emit(String.valueOf(p.id()), players);
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();

@@ -84,6 +84,8 @@ async function start(randomly)
     if(response.status==200 && response?.etat == "CHOISIR_INDICE")
     {
         const payload = await response.json();
+        console.log(payload);
+        localStorage.setItem("cards", payload.cards);
         enterGame(payload.role);       
     }else
     {
