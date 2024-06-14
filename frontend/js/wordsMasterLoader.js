@@ -49,18 +49,19 @@ async function sendClue()
         return
     }
 
-    let clue=document.getElementById("indice_input").value
-    let toFind=document.getElementById("nombre_indice").value
-    const id_partie=JSON.parse(localStorage.getItem("current_player"))
+    let clue = document.getElementById("indice_input").value
+    let toFind = document.getElementById("nombre_indice").value
 
-    const _clue= await fetch("http://localhost:8080/clue/"+id_partie.idPartie,{method:"post",headers: {"Content-Type": "application/json"},body:JSON.stringify(clue,toFind)})
+    const body = JSON.stringify({"clue":clue, "toFind": toFind});
+
+    const _clue= await fetch("http://localhost:8080/clue/"+partieId,{method:"post",headers: {"Content-Type": "application/json"}, body:body})
     if(_clue.status==200)
     {
        
     }
     else
     {
-        alert(_clue.text())
+        alert(await _clue.text())
     }
 
 }
