@@ -8,11 +8,12 @@ const partieId = JSON.parse(localStorage.getItem("current_player")).idPartie;
 const apiService = new ApiService(partieId, playerId)
 const sseClient = new SSEClient("localhost:8080");
 
-sseClient.connect();
-sseClient.subscribe(playerId, (data) => {onSSEData(data)});
  
 async function onLoad()
 {
+    sseClient.connect();
+    sseClient.subscribe(playerId, (data) => {onSSEData(data)});
+
     const view = new CardsView();   
 
     const cards = await apiService.getCards();

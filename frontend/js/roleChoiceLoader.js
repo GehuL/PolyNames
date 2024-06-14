@@ -8,13 +8,11 @@ const partieId = JSON.parse(localStorage.getItem("current_player")).idPartie;
 const apiService = new ApiService(partieId, playerId)
 const sseClient = new SSEClient("localhost:8080");
 
-sseClient.connect();
-sseClient.subscribe(playerId, (data) => {onSSEData(data)});
-
-window.addEventListener("load",run)
-
 async function run()
 {
+    sseClient.connect();
+    sseClient.subscribe(playerId, (data) => {onSSEData(data)});
+
     document.getElementById("role_swap").addEventListener("click", fetchSwap);
 
     document.getElementById("start").addEventListener("click",()=>{ start(false); })
@@ -85,8 +83,9 @@ function enterGame(role)
 async function start(randomly)
 {
     const response = await apiService.startGame(randomly);
-    const payload = await response.json();
 
     if(response.status!=200)
         alert(await response.text())
 }
+
+window.addEventListener("load",run)
