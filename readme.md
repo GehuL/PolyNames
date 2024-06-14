@@ -1,3 +1,6 @@
+# Avertissement
+Il est nécessaire de lancer deux instances de visual studio code, l'un dans le dossier backend, l'autre dans le dossier frontend pour que LiveServer est le bon chemin.
+
 # Diagramme Entités-Associations 
 
 ![schema_bdd](https://github.com/GehuL/PolyNames/assets/110404104/b0abbb25-4896-442b-8eb6-7c7dbc46a074)
