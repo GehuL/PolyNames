@@ -16,11 +16,9 @@ import models.Game;
 import models.Guess;
 import models.GuessRound;
 import models.Player;
-import models.StartGame;
 import webserver.WebServerContext;
 import webserver.WebServerRequest;
 import webserver.WebServerResponse;
-import webserver.WebServerSSE;
 
 /**
  * Traite les requêtes en rapport avec le déroulement d'une partie
@@ -106,70 +104,74 @@ public class GameController
             GameDAO gameDAO = new GameDAO();        
             CardDAO cardDAO = new CardDAO();
 
-            Game game = gameDAO.getGame(idPartie);
+            final Game game = gameDAO.getGame(idPartie);
             
-            if(game == null || game.etat() != EEtatPartie.DEVINER || game.dejaTrouvee() >= game.doitDeviner() + 1)
-            {
-                response.serverError("Server error");
-                return;
-            }
+            if(game == null)
+                throw new GameException("Partie introuvable", GameException.Type.CODE_INVALID);
 
+            if(game.etat() != EEtatPartie.DEVINER)
+                throw new GameException("Ce n'est pas a ton tour !", GameException.Type.STATE_INVALID);
+
+           
             Card card = cardDAO.getCard(idPartie, guess.idCard());
             
             if(card == null)
-            {
-                response.serverError("La carte n'existe pas");
-                return;
-            }
+                throw new GameException("La carte n'existe pas");
 
             if(card.revealed())
-            {
-                response.serverError("La carte est déjà révelée");
-                return;
-            }
+                throw new GameException("Carte deja revelee");
 
-            if(card.color() == ECardColor.NOIR) // Partie finie
+            switch(card.color())
             {
-                gameDAO.setState(idPartie, EEtatPartie.FIN);
-                gameDAO.setDejaTrouvee(idPartie, 0);
-            }else if(card.color() == ECardColor.GRIS) // Tour finie
-            {
-                gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-                gameDAO.setDejaTrouvee(idPartie, 0); // Reset le compteur des cartes trouvées ce tour
-            }else // BLEU
-            {
-                int nbrTrouvee = game.dejaTrouvee() + 1;
-
-                int score = game.score();
-
-                if(nbrTrouvee >= game.doitDeviner() + 1)
-                {
-                    gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
+                case NOIR:  // Partie finie
+                    gameDAO.setState(idPartie, EEtatPartie.FIN);
                     gameDAO.setDejaTrouvee(idPartie, 0);
-                    score += nbrTrouvee * nbrTrouvee; // score += N² 
-                }else
+                break;
+                case GRIS: // Tour fini
+                    gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
+                    gameDAO.setDejaTrouvee(idPartie, 0); // Reset le compteur des cartes trouvées ce tour
+                break;
+                case BLEU:
                 {
-                    gameDAO.setDejaTrouvee(idPartie, nbrTrouvee);
-                    score += nbrTrouvee;
-                }
+                    int nbrTrouvee = game.dejaTrouvee() + 1;
 
-                gameDAO.setScore(idPartie, score);
+                    int score = game.score();
+    
+                    // Nombre de carte découverte dépassé
+                    if(nbrTrouvee >= game.doitDeviner() + 1)
+                    {
+                        gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
+                        gameDAO.setDejaTrouvee(idPartie, 0);
+                        score += nbrTrouvee * nbrTrouvee; // score += N² 
+                    }else
+                    {
+                        gameDAO.setDejaTrouvee(idPartie, nbrTrouvee);
+                        score += nbrTrouvee;
+                    }
+    
+                    gameDAO.setScore(idPartie, score);
+                }
+                break;
+                default:
+                    break;
             }
             
             cardDAO.revealCard(idPartie, card.cardId());
 
-            Game newState = gameDAO.getGame(idPartie);
-            GuessRound guessRound = new GuessRound(newState.etat(), game.score(), game.dejaTrouvee(), card.color(), card.cardId());
+            final Game newState = gameDAO.getGame(idPartie);
+            GuessRound guessRound = new GuessRound(newState.etat(), newState.score(), newState.dejaTrouvee(), card.color(), card.cardId());
 
             response.json(guessRound);
 
-            // Envoie du nouvel état de la partie au maitre des mots
+            // Envoi du nouvel état de la partie au maitre des mots
             Player masterWord = new PlayerDAO().getPlayer(idPartie, EPlayerRole.MAITRE_MOT);
-            context.getSSE().emit(String.valueOf(masterWord.id()), newState);
+            context.getSSE().emit(String.valueOf(masterWord.id()), guessRound);
 
         } catch (SQLException e) 
         {
             e.printStackTrace();
+        } catch (GameException e) {
+            response.serverError(e.getMessage());
         }
     }
 

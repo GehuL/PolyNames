@@ -37,4 +37,10 @@ export class ApiService
     {
         return await fetch(baseURL+"/cards/"+this.partieId+"/"+this.playerId);
     }
+
+    async guess(idCard)
+    {
+        const payload = JSON.stringify({"idCard": idCard});
+        return await fetch("http://localhost:8080/guess/"+this.partieId,{method:"post",headers: {"Content-Type": "application/json"},body:payload})
+    }
 }

@@ -24,8 +24,9 @@ async function onLoad()
 
     let div_cards = document.getElementsByClassName("cards")
     for(let card of div_cards){
-        card.addEventListener("click",()=>{
-            guess(card.innerHTML)
+        card.addEventListener("click",(e)=>{
+            console.log(e);
+            guess(e.target.getAttribute("id"));
         })
     }
 }
@@ -38,14 +39,20 @@ function onSSEData(data)
     }
 }
 
-async function guess(word){
-    const id_partie=JSON.parse(localStorage.getItem("current_player"))
-    const guess = await fetch("http://localhost:8080/guess/"+id_partie.idPartie,{method:"post",headers: {"Content-Type": "application/json"},body:JSON.stringify(word)})
-    if(guess.status==200){
-        console.log("indice envoyé")
+async function guess(idCard)
+{
+    const guess = await apiService.guess(idCard);
+    
+    if(guess.status==200)
+    {
+        const payload = await guess.json();
+
+        document.getElementById("score").innerHTML ="SCORE: " + payload.score;
+        document.getElementById(payload.idCard).dataset.color = payload.color;
     }
-    else{
-        alert(guess.text())
+    else
+    {
+        alert(await guess.text())
     }
 }
 

@@ -8,9 +8,16 @@ public class GameException extends Exception
         CODE_INVALID,
         PLAYER_INVALID,
         STATE_INVALID,
+        UNKNOW,
     }
 
     private Type type;
+
+    
+    public GameException(String message) {
+        super(message);
+        this.type=Type.UNKNOW;
+    }
 
     public GameException(String message, Type type) {
         super(message);
