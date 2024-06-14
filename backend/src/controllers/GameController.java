@@ -211,36 +211,5 @@ public class GameController
         }
     }
 
-    
-    /**
-     * Envoie la liste des cartes aux joueurs de la partie en masquant la couleur pour le maitre des intuitions.
-     * @param sse
-     * @param players La liste des joueurs
-     * @param game La partie 
-     * @throws SQLException
-     */
-    private static void sendCardsToPlayers(WebServerSSE sse, ArrayList<Player> players, Game game) throws SQLException
-    {
-        if(players.size() == 0)
-            return;  
 
-        PlayerDAO playerDAO = new PlayerDAO();
-
-        ArrayList<ClientCard> cards = new CardDAO().getCards(game.id());
-        ArrayList<ClientCard> hidden = new ArrayList<>();
-
-        cards.forEach((card) -> {hidden.add(new ClientCard(card.mot(), card.idCard(), ECardColor.UNKNOW));});
-        
-        // Annonce le début de partie
-        for(Player player : playerDAO.getPlayers(game.id()))
-        {
-            if(player.role() == EPlayerRole.MAITRE_INTUITION)
-            {
-                sse.emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), hidden));
-            }else
-            {
-                sse.emit(String.valueOf(player.id()), new StartGame(game.etat(), player.role(), cards));
-            }
-        }
-    }
 }

@@ -77,15 +77,8 @@ function enterGame(role)
 async function start(randomly)
 {
     const response = await apiService.startGame(randomly);
+    const payload = await response.json();
 
-    if(response.status==200 && response?.etat == "CHOISIR_INDICE")
-    {
-        const payload = await response.json();
-        console.log(payload);
-        localStorage.setItem("cards", payload.cards);
-        enterGame(payload.role);       
-    }else
-    {
+    if(response.status!=200)
         alert(await response.text())
-    }
 }

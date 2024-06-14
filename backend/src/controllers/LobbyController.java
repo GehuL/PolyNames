@@ -174,7 +174,12 @@ public class LobbyController
             // Change le statut de la partie et génère les cartes aléatoirement
             generateRandomCards(idPartie);
             gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-            response.json(game);
+
+            response.ok("OK");
+
+            final Game newGame = gameDAO.getGame(idPartie);
+
+            players.forEach((p) -> context.getSSE().emit(String.valueOf(p.id()), new StartGame(newGame.etat(), p.role())));
 
         } catch (SQLException e) 
         {
@@ -212,7 +217,12 @@ public class LobbyController
             // Change le statut de la partie et génère les cartes aléatoirement
             generateRandomCards(idPartie);
             gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-            response.json(game);
+            
+            response.ok("OK");
+
+            final Game newGame = gameDAO.getGame(idPartie);
+
+            players.forEach((p) -> context.getSSE().emit(String.valueOf(p.id()), new StartGame(newGame.etat(), p.role())));
 
         } catch (SQLException e) {
             e.printStackTrace();
