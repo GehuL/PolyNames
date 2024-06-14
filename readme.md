@@ -8,6 +8,7 @@ Il faut lancer un navigateur (chrome et edge devrait marcher) et deux onglets do
 
 # Script SQL
 CREATE DATABASE polynames;
+USE polynames;
 
 CREATE TABLE `polynames`.`partie` (`id` INT NOT NULL AUTO_INCREMENT , `code` CHAR(5) NOT NULL , `score` INT NOT NULL , `indiceCourant` VARCHAR(15) DEFAULT NULL, `doitDeviner` INT DEFAULT 0, `dejaTrouvee` INT DEFAULT 0, `etat` ENUM('SELECTION_ROLE', 'DEVINER', 'CHOISIR_INDICE', 'FIN') DEFAULT 'SELECTION_ROLE', PRIMARY KEY (`id`)) ENGINE = InnoDB;
 CREATE TABLE `polynames`.`joueur` (`id` INT NOT NULL AUTO_INCREMENT , `nom` VARCHAR(10) NOT NULL , `idPartie` INT NOT NULL, `role` ENUM('MAITRE_MOT', 'MAITRE_INTUITION') NOT NULL DEFAULT 'maitre_intuition', PRIMARY KEY (`id`)) ENGINE = InnoDB; 
