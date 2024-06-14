@@ -1,11 +1,13 @@
 package controllers;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import dao.CardDAO;
 import dao.GameDAO;
 import dao.PlayerDAO;
 import models.Card;
+import models.ClientCard;
 import models.Clue;
 import models.ECardColor;
 import models.EEtatPartie;
@@ -102,66 +104,124 @@ public class GameController
             GameDAO gameDAO = new GameDAO();        
             CardDAO cardDAO = new CardDAO();
 
-            Game game = gameDAO.getGame(idPartie);
+            final Game game = gameDAO.getGame(idPartie);
             
-            if(game == null || game.etat() != EEtatPartie.DEVINER || game.dejaTrouvee() >= game.doitDeviner() + 1)
-            {
-                response.serverError("Server error");
-                return;
-            }
+            if(game == null)
+                throw new GameException("Partie introuvable", GameException.Type.CODE_INVALID);
 
+            if(game.etat() != EEtatPartie.DEVINER)
+                throw new GameException("Ce n'est pas a ton tour !", GameException.Type.STATE_INVALID);
+
+           
             Card card = cardDAO.getCard(idPartie, guess.idCard());
             
             if(card == null)
-            {
-                response.serverError("La carte n'existe pas");
-                return;
-            }
+                throw new GameException("La carte n'existe pas");
 
             if(card.revealed())
-            {
-                response.serverError("La carte est déjà révelée");
-                return;
-            }
+                throw new GameException("Carte deja revelee");
 
-            if(card.color() == ECardColor.NOIR) // Partie finie
+            switch(card.color())
             {
-                gameDAO.setState(idPartie, EEtatPartie.FIN);
-                gameDAO.setDejaTrouvee(idPartie, 0);
-            }else if(card.color() == ECardColor.GRIS) // Tour finie
-            {
-                gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
-                gameDAO.setDejaTrouvee(idPartie, 0); // Reset le compteur de cartes trouvées ce tour
-            }else // BLEU
-            {
-                int nbrTrouvee = game.dejaTrouvee() + 1;
-
-                int score = game.score();
-
-                if(nbrTrouvee >= game.doitDeviner() + 1)
-                {
-                    gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
+                case NOIR:  // Partie finie
+                    gameDAO.setScore(idPartie, 0);
+                    gameDAO.setState(idPartie, EEtatPartie.FIN);
                     gameDAO.setDejaTrouvee(idPartie, 0);
-                    score += nbrTrouvee * nbrTrouvee; // score += N² 
-                }else
+                break;
+                case GRIS: // Tour fini
+                    gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
+                    gameDAO.setDejaTrouvee(idPartie, 0); // Reset le compteur des cartes trouvées ce tour
+                break;
+                case BLEU:
                 {
-                    gameDAO.setDejaTrouvee(idPartie, nbrTrouvee);
-                    score += nbrTrouvee;
-                }
+                    int nbrTrouvee = game.dejaTrouvee() + 1;
 
-                gameDAO.setScore(idPartie, score);
+                    int score = game.score();
+    
+                    // Nombre de carte découverte dépassé
+                    if(nbrTrouvee >= game.doitDeviner() + 1)
+                    {
+                        gameDAO.setState(idPartie, EEtatPartie.CHOISIR_INDICE);
+                        gameDAO.setDejaTrouvee(idPartie, 0);
+                        score += nbrTrouvee * nbrTrouvee; // score += N² 
+                    }else
+                    {
+                        gameDAO.setDejaTrouvee(idPartie, nbrTrouvee);
+                        score += nbrTrouvee;
+                    }
+    
+                    gameDAO.setScore(idPartie, score);
+                    
+                    if(cardDAO.countCardRevelead(idPartie, ECardColor.BLEU) >= 8)
+                        gameDAO.setState(idPartie, EEtatPartie.FIN);
+                }
+                break;
+                default:
+                    break;
             }
+            
             cardDAO.revealCard(idPartie, card.cardId());
 
-            Game newState = gameDAO.getGame(idPartie);
-            response.json(new GuessRound(newState.etat(), game.score(), game.dejaTrouvee(), card.color(), card.cardId()));
+            final Game newState = gameDAO.getGame(idPartie);
+            GuessRound guessRound = new GuessRound(newState.etat(), newState.score(), newState.dejaTrouvee(), card.color(), card.cardId());
 
+            response.json(guessRound);
+
+            // Envoi du nouvel état de la partie au maitre des mots
             Player masterWord = new PlayerDAO().getPlayer(idPartie, EPlayerRole.MAITRE_MOT);
-            context.getSSE().emit(String.valueOf(masterWord.id()), guess);
+            context.getSSE().emit(String.valueOf(masterWord.id()), guessRound);
+
+            // On peut supprimer la partie de la BDD
+            if(guessRound.etatPartie() == EEtatPartie.FIN)
+            {
+                gameDAO.deleteGame(idPartie);
+            }
 
         } catch (SQLException e) 
         {
             e.printStackTrace();
+        } catch (GameException e) {
+            response.serverError(e.getMessage());
         }
     }
+
+    /**
+     * Renvoie les cartes de la partie
+     * La route prend en paramètre l'ID de la partie et l'ID du joueur uniquement connu par le client.
+     * @param context
+     */
+    public static void getCards(WebServerContext context)
+    {
+        WebServerRequest request = context.getRequest();
+        WebServerResponse response = context.getResponse();
+
+        int idPartie = Integer.valueOf(request.getParam("idPartie"));
+        int idJoueur = Integer.valueOf(request.getParam("idJoueur"));
+
+        try 
+        {
+            CardDAO cardDAO = new CardDAO();
+            ArrayList<ClientCard> cards = cardDAO.getCards(idPartie);
+
+            PlayerDAO playerDAO = new PlayerDAO();
+            Player player = playerDAO.getPlayer(idJoueur);
+            
+            if(player == null)
+                throw new GameException("La partie n'existe pas", GameException.Type.CODE_INVALID);
+
+            // Masque la couleur pour le maitre des intuitions 
+            if(player.role() == EPlayerRole.MAITRE_INTUITION)
+                cards.replaceAll((card) -> {return new ClientCard(card.mot(), card.idCard(), ECardColor.UNKNOW);});
+
+            response.json(cards);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (GameException e)
+        {
+            response.serverError(e.getMessage());
+        }
+    }
+
+
 }

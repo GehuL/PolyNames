@@ -1,15 +1,26 @@
 import { SSEClient } from "./libs/sse-client.js";
 import { CardsView } from "./views/cards-view.js";
- 
+import { ApiService} from "./services/api-service.js"
 
 const playerId = JSON.parse(localStorage.getItem("current_player")).id;
+const partieId = JSON.parse(localStorage.getItem("current_player")).idPartie;
+
+const apiService = new ApiService(partieId, playerId)
 const sseClient = new SSEClient("localhost:8080");
+
 sseClient.connect();
 sseClient.subscribe(playerId, (data) => {onSSEData(data)});
-
-function onLoad()
+ 
+async function onLoad()
 {
-    const view = new CardsView();
+    const view = new CardsView();   
+
+    const cards = await apiService.getCards();
+    
+    for(let card of await cards.json())
+    {
+        view.displayCard(card);
+    }
 
     const select_nbr = document.getElementById("nombre_indice");
     for(let i = 1; i < 10; i++)
@@ -25,16 +36,37 @@ document.getElementById("btn_valider").addEventListener("click",()=>{
     sendClue()
 })
 
-async function sendClue(){
-    let clue=document.getElementById("indice_input").value
-    let toFind=document.getElementById("nombre_indice").value
-    const id_partie=JSON.parse(localStorage.getItem("current_player"))
-    const _clue= await fetch("http://localhost:8080/clue/"+id_partie.idPartie,{method:"post",headers: {"Content-Type": "application/json"},body:JSON.stringify(clue,toFind)})//il faut ajouter le sse de maniere a ce que le maitre des intuitions voit l'indice apparaitre
-    if(_clue.status==200){
-        console.log(clue)
+function onSSEData(data)
+{
+    if(data?.etatPartie == "FIN")
+    {
+        alert("La partie est finie !");
+        window.location.href="/index.html";
     }
-    else{
-        alert(_clue.text())
+}
+
+async function sendClue()
+{
+    if(document.getElementById("indice_input").value=="")
+    {
+        alert("Indice non valide")
+        return
+    }
+
+    let clue = document.getElementById("indice_input").value
+    let toFind = document.getElementById("nombre_indice").value
+
+    const body = JSON.stringify({"clue":clue, "toFind": toFind});
+
+    const _clue= await fetch("http://localhost:8080/clue/"+partieId,{method:"post",headers: {"Content-Type": "application/json"}, body:body})
+    
+    if(_clue.status==200)
+    {
+       
+    }
+    else
+    {
+        alert(await _clue.text())
     }
 
 }

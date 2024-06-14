@@ -14,11 +14,6 @@ body {
     background-color: #1f103d;
 }
 
-.cards
-{
-    margin-bottom: 5%;
-}
-
 
 #score
 {
@@ -27,3 +22,30 @@ body {
     margin-bottom: 2%;
     font-size: larger;
 }
+
+.indice_div
+{
+    display: flex;
+    flex-direction: row;
+    margin-top: 100px;
+}
+
+.indice_div > label
+{
+    display:flex;
+    justify-content: center;
+    color:#000000;
+    background-color: aliceblue;
+    border-radius: 20px;
+    border-style: groove;
+    border-color: #d6ba3e;
+    font-weight: bold;
+    width: 150px;
+}
+
+#nombre_deviner
+{
+    width: fit-content;
+}
+
+

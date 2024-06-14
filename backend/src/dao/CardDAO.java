@@ -34,6 +34,23 @@ public class CardDAO
     }
 
     /**
+     * Compte le nombre de carte qui sont révélées pra le maitre des intuitions.
+     * @param idPartie
+     * @return
+     * @throws SQLException 
+     */
+    public int countCardRevelead(int idPartie, ECardColor color) throws SQLException
+    {
+        PreparedStatement statement = bdd.prepareStatement("SELECT COUNT(revelee) FROM carte WHERE idPartie=? AND revelee=TRUE AND couleur=?;");
+        statement.setInt(1, idPartie);
+        statement.setString(2, color.toString());
+        ResultSet result = statement.executeQuery();
+        result.next();
+        return result.getInt(1);
+    }
+
+
+    /**
      * Renvoie les cartes associés à une partie.
      * @param idPartie
      * @return La liste des cartes. Peut être vide si la partie n'existe pas ou qu'il n'y a pas encore de carte.
@@ -41,13 +58,15 @@ public class CardDAO
      */
     public ArrayList<ClientCard> getCards(int idPartie) throws SQLException
     {
-        PreparedStatement statement = bdd.prepareStatement("SELECT mot,couleur FROM carte INNER JOIN dictionnaire ON dictionnaire.id=carte.idMot WHERE idPartie=?;");
+        PreparedStatement statement = bdd.prepareStatement("SELECT mot,couleur,carte.id FROM carte INNER JOIN dictionnaire ON dictionnaire.id=carte.idMot WHERE idPartie=?;");
         statement.setInt(1, idPartie);
         ResultSet result = statement.executeQuery();
         ArrayList<ClientCard> cards = new ArrayList<>();
         while(result.next())
         {
-            cards.add(new ClientCard(result.getString("dictionnaire.mot"), ECardColor.valueOf(result.getString("couleur"))));
+            cards.add(new ClientCard(result.getString("dictionnaire.mot"), 
+                                     result.getInt("id"),
+                                     ECardColor.valueOf(result.getString("couleur"))));
         }
         return cards;
     }

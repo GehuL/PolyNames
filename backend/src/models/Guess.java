@@ -1,3 +1,3 @@
 package models;
 
-public record Guess(int idCard) {}
+public record Guess(int idCard){}
