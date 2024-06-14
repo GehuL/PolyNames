@@ -11,14 +11,19 @@ const sseClient = new SSEClient("localhost:8080");
 sseClient.connect();
 sseClient.subscribe(playerId, (data) => {onSSEData(data)});
  
-function onLoad()
+async function onLoad()
 {
     const view = new CardsView();   
 
+    const cards = await apiService.getCards();
+    
+    for(let card of await cards.json())
+    {
+        view.displayCard(card);
+    }
 
-
-    let cards = document.getElementsByClassName("cards")
-    for(let card of cards){
+    let div_cards = document.getElementsByClassName("cards")
+    for(let card of div_cards){
         card.addEventListener("click",()=>{
             guess(card.innerHTML)
         })
